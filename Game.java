@@ -134,21 +134,12 @@ public class Game {
 	}
 	
 	public void checkTurn (int position){
-		if (turn == "p1"){
-			if (position == 6){
-				turn = "p1";
-			}
-			else {
-				turn = "p2";
-			}
+		if (turn == "p1" && position != 6){
+			turn = "p2";
+			// call AI if in AI mode;
 		}
-		else if (turn == "p2"){
-			if (position == 13) {
-				turn = "p2";
-			}
-			else {
-				turn = "p1";
-			}
+		else if (turn == "p2" && position != 13){
+			turn = "p1";
 		}
 	}
 	
