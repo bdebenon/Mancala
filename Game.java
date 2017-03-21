@@ -1,4 +1,8 @@
+import java.io.IOException;
 import java.util.*;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
 
 public class Game {
 	private String turn;   // p1 (player 1) or p2 (player 2)
@@ -194,7 +198,21 @@ public class Game {
 		}
 	}
 	
-	public static void main (String [] args) {
+	public static void main (String [] args) throws IOException {
 		Game game = new Game();
+		//GameUI gui = new GameUI(game);
+        EventQueue.invokeLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try {
+					new GameUI().displayGUI(game);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            }
+        });
 	}
 }
