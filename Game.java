@@ -17,7 +17,7 @@ public class Game {
 	
 	// 2 players mode 
 	public Game() {
-		newGame(false);
+		newGame(true);
 	}
 	
 	// initialize the game
@@ -273,7 +273,7 @@ public class Game {
                 try {
 					new GameUI().displayGUI(game);
 				} catch (IOException e) {
-					
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
             }
