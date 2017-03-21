@@ -1,4 +1,8 @@
 import java.util.*;
+import java.io.IOException;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
 
 public class Game {
 	private String turn;   // p1 (player 1) or p2 (player 2)
@@ -9,10 +13,11 @@ public class Game {
 	private int [] board;
 	private int totalPebble1;
 	private int totalPebble2;
+	private static final int NUMBEANS = 4;
 	
-	// 1 player mode 
+	// 2 players mode 
 	public Game() {
-		newGame(true);
+		newGame(false);
 	}
 	
 	// initialize the game
@@ -27,7 +32,7 @@ public class Game {
 				board[i] = 0;
 			}
 			else {
-				board[i] = 4;
+				board[i] = NUMBEANS;
 			}
 		}
 		// initialize turn, player 1 always starts first 
@@ -83,6 +88,8 @@ public class Game {
 		if (!result.equals("none")) {
 			// call GUI game over
 			// make new game
+			System.out.println("The winner is " + result);
+			System.out.println("Game Over");
 			return true;
 		}
 		return false;
@@ -134,11 +141,57 @@ public class Game {
 	}
 	
 	public void checkTurn (int position){
-		if (turn == "p1" && position != 6){
-			turn = "p2";
-			// call AI if in AI mode;
+		if (twoPlayer){
+			if (turn == "p1" && position != 6){
+				turn = "p2";
+			}
+			else if (turn == "p2" && position != 13) {
+				turn = "p1";
+			}
+			System.out.println(turn);
 		}
-		else if (turn == "p2" && position != 13){
+		else { // AI mode 
+			turn = "p2";
+			int endPosition = 0;
+			do {
+			if (!isEmpty()) {
+				int house;
+				do {
+					house = (int) (Math.random() * 6 + 7);
+				} while (boardInfo(house) == 0); 
+				System.out.println("AI house: " + house);
+			
+				int numPebbles = board[house];
+				endPosition = (house + numPebbles) % 14;
+				if (numPebbles + house <= 13){
+					dispersePebbles(house+1,house+numPebbles);
+				}
+				else {
+					dispersePebbles(house+1,13);
+					numPebbles = numPebbles - (13-house);
+					int numLoops = numPebbles/13;
+					while (numLoops > 0) {
+						dispersePebbles(0,5);
+						dispersePebbles(7,13);
+						numPebbles -= 13;
+						--numLoops;
+					}
+					if (numPebbles < 6){
+						dispersePebbles(0,numPebbles-1);
+					}
+					else {
+						dispersePebbles(0,5);
+						dispersePebbles(7,numPebbles);
+					}
+				}
+				board[house] = 0;
+				claimPebbles(endPosition);
+				for (int i = 0; i < 14; ++i) {
+					System.out.println("number of pebbles in house " + i + " is: " + board[i]);
+				}
+				System.out.println("End position: " + endPosition);
+				}
+			} while (endPosition == 13);
 			turn = "p1";
 		}
 	}
@@ -146,7 +199,7 @@ public class Game {
 	public void move (int position) {
 		if (isPositionValid(position)){
 			int numPebbles = board[position];
-			int endPosition = (position + numPebbles) % 13;
+			int endPosition = (position + numPebbles) % 14;
 			if (turn == "p1"){
 				if (numPebbles + position <= 12){
 					dispersePebbles(position+1,position+numPebbles);
@@ -187,14 +240,60 @@ public class Game {
 			}
 			board[position] = 0;
 			claimPebbles(endPosition);
-			checkTurn(endPosition);
+			/********* FOR DEBUGGING ***********/
+			for (int i = 0; i < 14; ++i) {
+				System.out.println("number of pebbles in house " + i + " is: " + board[i]);
+			}
+			System.out.println("End position: " + endPosition);
+			/********* FOR DEBUGGING ***********/
+			if (twoPlayer) {
+				checkTurn(endPosition);
+			}
+			else { // AI
+				if (endPosition != 6) {
+					checkTurn(endPosition);
+				}
+			}
 		}
 		else {
 			// GUI show "invalid position" message
+			System.out.println("Invalid position");
 		}
 	}
 	
 	public static void main (String [] args) {
 		Game game = new Game();
+		
+		/********* GUI ***********/
+		EventQueue.invokeLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try {
+					new GameUI().displayGUI(game);
+				} catch (IOException e) {
+					
+					e.printStackTrace();
+				}
+            }
+        });
+		
+		/********* END OF GUI ***********/
+		
+		/********* FOR DEBUGGING ***********/
+		// Scanner sc = new Scanner(System.in);
+		// System.out.println("Enter a house number: ");
+		// int house;
+		// while ((house = sc.nextInt()) >= 0) {
+			// game.move(house);
+			// if (game.isEmpty()){
+				// game.lastMove();
+				// game.isOver();
+				// break;
+			// }
+			// System.out.print("Enter a house number: ");
+		// }
+		/********* END DEBUGGING ***********/
 	}
 }
