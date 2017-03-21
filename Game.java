@@ -281,6 +281,21 @@ public class Game {
 		
 		/********* END OF GUI ***********/
 		
+		/********* FOR DEBUGGING ***********/
+		// Scanner sc = new Scanner(System.in);
+		// System.out.println("Enter a house number: ");
+		// int house;
+		// while ((house = sc.nextInt()) >= 0) {
+			// game.move(house);
+			// if (game.isEmpty()){
+				// game.lastMove();
+				// game.isOver();
+				// break;
+			// }
+			// System.out.print("Enter a house number: ");
+		// }
+		/********* END DEBUGGING ***********/
+		
 	
 	}
 }
