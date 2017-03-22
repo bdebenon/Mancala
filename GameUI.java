@@ -193,7 +193,7 @@ public class GameUI extends JPanel {
             {
             }
             else if (ae.getSource() == newGame) {
-            	
+            	game.newGame();
             }
         }
 };  

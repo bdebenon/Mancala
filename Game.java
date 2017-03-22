@@ -14,6 +14,7 @@ public class Game {
 	private int totalPebble1;
 	private int totalPebble2;
 	private static final int NUMBEANS = 4;
+	private static GameUI gameGUI;
 	
 	// 2 players mode 
 	public Game() {
@@ -38,6 +39,25 @@ public class Game {
 		// initialize turn, player 1 always starts first 
 		// player 2 could either be human or AI 
 		turn = "p1";
+	}
+	
+	public void newGame () {
+		// initialize the board 
+		// except for kalahs, which have zero bean at the beginning
+		// all the other houses have 4 beans 
+		board = new int[14];   
+		for (int i = 0; i < 14; ++i) {
+			if (i==6 || i == 13){
+				board[i] = 0;
+			}
+			else {
+				board[i] = NUMBEANS;
+			}
+		}
+		// initialize turn, player 1 always starts first 
+		// player 2 could either be human or AI 
+		turn = "p1";
+		gameGUI.updateBoard(board);
 	}
 	
 	// board getter
@@ -263,7 +283,7 @@ public class Game {
 	
 	public static void main (String [] args) {
 		Game game = new Game();
-		GameUI gameGUI = new GameUI();
+		gameGUI = new GameUI();
 		try {
 			gameGUI.displayGUI(game);
 		} catch (IOException e1) {
