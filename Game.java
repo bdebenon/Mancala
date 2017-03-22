@@ -263,21 +263,44 @@ public class Game {
 	
 	public static void main (String [] args) {
 		Game game = new Game();
-		
+		GameUI gameGUI = new GameUI();
+		try {
+			gameGUI.displayGUI(game);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		 System.out.println("Enter a house number: ");
+		 int house;
+		 while (true) {
+			 if((house = gameGUI.waitForClick()) >= 0) {
+				 //System.out.println(house);
+				 game.move(house);
+				 if (game.isEmpty()){
+					 game.lastMove();
+					 game.isOver();
+					 break;
+				 }
+				 System.out.print("Enter a house number: ");
+			 }
+		 }
 		/********* GUI ***********/
-		EventQueue.invokeLater(new Runnable()
+		/*EventQueue.invokeLater(new Runnable()
         {
             @Override
             public void run()
             {
                 try {
-					new GameUI().displayGUI(game);
+					GameUI gameGUI = new GameUI();
+					gameGUI.displayGUI(game);
+					System.out.println("TEST");
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
             }
-        });
+            
+        });*/
 		
 		/********* END OF GUI ***********/
 		
