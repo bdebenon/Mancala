@@ -10,7 +10,7 @@ public class Game {
 	private boolean AIeasy;
 	private boolean AImedium;
 	private boolean AIhard;
-	private int [] board;
+	private static int [] board;
 	private int totalPebble1;
 	private int totalPebble2;
 	private static final int NUMBEANS = 4;
@@ -276,6 +276,7 @@ public class Game {
 			 if((house = gameGUI.waitForClick()) >= 0) {
 				 //System.out.println(house);
 				 game.move(house);
+				 gameGUI.updateBoard(board);
 				 if (game.isEmpty()){
 					 game.lastMove();
 					 game.isOver();
@@ -284,25 +285,6 @@ public class Game {
 				 System.out.print("Enter a house number: ");
 			 }
 		 }
-		/********* GUI ***********/
-		/*EventQueue.invokeLater(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                try {
-					GameUI gameGUI = new GameUI();
-					gameGUI.displayGUI(game);
-					System.out.println("TEST");
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-            }
-            
-        });*/
-		
-		/********* END OF GUI ***********/
 		
 		/********* FOR DEBUGGING ***********/
 		// Scanner sc = new Scanner(System.in);
