@@ -23,9 +23,9 @@ class mancalaClickablePit extends JPanel {
 	mancalaClickablePit(int pitNumber) {
 		mancalaClickablePitNum = pitNumber;
 		if(mancalaClickablePitNum == 1) {
-			pitImage = createNewPitImage("bluePit4.jpg");
+			pitImage = createNewPitImage("images/bluePit/bluePit4.jpg");
 		} else {
-			pitImage = createNewPitImage("orangePit4.jpg");
+			pitImage = createNewPitImage("images/orangePit/orangePit4.jpg");
 		}
 		pitButton = new JButton(pitImage);
 		
@@ -58,9 +58,9 @@ class mancalaCachePit extends JPanel {
 		mancalaCachePitNum = pitNumber;
 		ALMODE_IS_OFF = true;
 		if(mancalaCachePitNum == 1) {
-			pitImage = createNewCacheImage("blueCache0.jpg");
+			pitImage = createNewCacheImage("images/blueCache/blueCache0.jpg");
 		} else {
-			pitImage = createNewCacheImage("orangeCache0.jpg");
+			pitImage = createNewCacheImage("images/orangeCache/orangeCache0.jpg");
 		}
 		pitButton = new JButton(pitImage);
 		
@@ -130,115 +130,77 @@ public class GameUI extends JPanel {
             {
                 updateRequired = true;
                 houseClicked = 0;
-            	//System.out.println("SUCCESS - 0");
             }
             else if (ae.getSource() == pit1)
             {
                 updateRequired = true;
                 houseClicked = 1;
-            	//System.out.println("SUCCESS - 1");
             }
             else if (ae.getSource() == pit2)
             {
                 updateRequired = true;
                 houseClicked = 2;
-            	//System.out.println("SUCCESS - 2");
             }
             else if (ae.getSource() == pit3)
             {
                 updateRequired = true;
                 houseClicked = 3;
-            	//System.out.println("SUCCESS - 3");
             }
             else if (ae.getSource() == pit4)
             {
                 updateRequired = true;
                 houseClicked = 4;
-            	//System.out.println("SUCCESS - 4");
             }
             else if (ae.getSource() == pit5)
             {
                 updateRequired = true;
                 houseClicked = 5;
-            	//System.out.println("SUCCESS - 5");
             }
             else if (ae.getSource() == pit6)
             {
-            	//System.out.println("SUCCESS - 6");
             }
             else if (ae.getSource() == pit7)
             {
                 updateRequired = true;
                 houseClicked = 7;
-            	//System.out.println("SUCESS - 7");
             }
             else if (ae.getSource() == pit8)
             {
                 updateRequired = true;
                 houseClicked = 8;
-            	//System.out.println("SUCCESS - 8");
             }
             else if (ae.getSource() == pit9)
             {
                 updateRequired = true;
                 houseClicked = 9;
-            	//System.out.println("SUCCESS - 9");
             }
             else if (ae.getSource() == pit10)
             {
                 updateRequired = true;
                 houseClicked = 10;
-            	//System.out.println("SUCCESS - 10");
             }
             else if (ae.getSource() == pit11)
             {
                 updateRequired = true;
                 houseClicked = 11;
-            	//System.out.println("SUCCESS - 11");
             }
             else if (ae.getSource() == pit12)
             {
                 updateRequired = true;
                 houseClicked = 12;
-            	//System.out.println("SUCCESS - 12");
             }
             else if (ae.getSource() == pit13)
             {
-            	//System.out.println("SUCCESS - 13");
             }
             else if (ae.getSource() == newGame) {
             	
             }
         }
-}; 
-  
+};  
 	
 	public void displayGUI(Game game) throws IOException {
 		this.game = game;
 		buttons = new JButton[14];
-		
-		orangePit0 = createNewPitImage("orangePit0.jpg");
-		orangePit1 = createNewPitImage("orangePit1.jpg");
-		orangePit2 = createNewPitImage("orangePit2.jpg");
-		orangePit3 = createNewPitImage("orangePit3.jpg");
-		orangePit4 = createNewPitImage("orangePit4.jpg");
-		orangePit5 = createNewPitImage("orangePit5.jpg");
-		orangePit6 = createNewPitImage("orangePit6.jpg");
-		orangePit7 = createNewPitImage("orangePit7.jpg");
-		orangePit8 = createNewPitImage("orangePit8.jpg");
-		orangePit9 = createNewPitImage("orangePit9.jpg");
-		
-		bluePit0 = createNewPitImage("bluePit0.jpg");
-		bluePit1 = createNewPitImage("bluePit1.jpg");
-		bluePit2 = createNewPitImage("bluePit2.jpg");
-		bluePit3 = createNewPitImage("bluePit3.jpg");
-		bluePit4 = createNewPitImage("bluePit4.jpg");
-		bluePit5 = createNewPitImage("bluePit5.jpg");
-		bluePit6 = createNewPitImage("bluePit6.jpg");
-		bluePit7 = createNewPitImage("bluePit7.jpg");
-		bluePit8 = createNewPitImage("bluePit8.jpg");
-		bluePit9 = createNewPitImage("bluePit9.jpg");
-		
 		
 		//Create Window
 		window = new JFrame("Mancala");
@@ -248,7 +210,7 @@ public class GameUI extends JPanel {
 		window.setResizable(true);
 		
 		//Set background
-		JLabel background = new JLabel(createNewBackgroundImage("mancalaBoard.jpg"));
+		JLabel background = new JLabel(createNewBackgroundImage("images/mancalaBoard.jpg"));
 		window.setContentPane(background);
 		
 		//Utilizing the GridBagLayout 
@@ -383,7 +345,6 @@ public class GameUI extends JPanel {
 		window.add(newGame, c);
 		newGame.addActionListener(actions);
 		
-		
 		c.gridx = 3;
 		window.add(new JButton("Button 2"), c);
 		
@@ -393,14 +354,12 @@ public class GameUI extends JPanel {
 		c.gridx = 5;
 		window.add(new JButton("Button 4"), c);
 		
-		//window.
-		
 		//Exit options and visibility status
 		window.setVisible(true);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
-	int waitForClick() { //NEW
+	int waitForClick() {
 		int house;
 		try {
 			Thread.sleep(100);
@@ -408,7 +367,6 @@ public class GameUI extends JPanel {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//System.out.println(houseClicked);
 		if(updateRequired == false) {
 			house = -1;
 		} else {
@@ -421,15 +379,18 @@ public class GameUI extends JPanel {
 	void updateBoard(int [] board) {
 		//Update blue pits
 		for(int i = 0; i < 6; ++i) {
-			buttons[i].setIcon(createNewPitImage("bluePit" + board[i] + ".jpg"));
+			buttons[i].setIcon(createNewPitImage("images/bluePit/bluePit" + board[i] + ".jpg"));
 		}
+		
 		//Update blue cache
-		buttons[6].setIcon(createNewCacheImage("blueCache" + board[6] + ".jpg"));
+		buttons[6].setIcon(createNewCacheImage("images/blueCache/blueCache" + board[6] + ".jpg"));
+		
 		//Update Orange Pits
 		for(int i = 7; i < 13; ++i) {
-			buttons[i].setIcon(createNewPitImage("orangePit" + board[i] + ".jpg"));
+			buttons[i].setIcon(createNewPitImage("images/orangePit/orangePit" + board[i] + ".jpg"));
 		}
+		
 		//Update Orange Cache
-		buttons[13].setIcon(createNewCacheImage("orangeCache" + board[13] + ".jpg"));
+		buttons[13].setIcon(createNewCacheImage("images/orangeCache/orangeCache" + board[13] + ".jpg"));
 	}
 }

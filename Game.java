@@ -274,7 +274,6 @@ public class Game {
 		 int house;
 		 while (true) {
 			 if((house = gameGUI.waitForClick()) >= 0) {
-				 //System.out.println(house);
 				 game.move(house);
 				 gameGUI.updateBoard(board);
 				 if (game.isEmpty()){
@@ -286,6 +285,7 @@ public class Game {
 			 }
 		 }
 		
+		 
 		/********* FOR DEBUGGING ***********/
 		// Scanner sc = new Scanner(System.in);
 		// System.out.println("Enter a house number: ");
