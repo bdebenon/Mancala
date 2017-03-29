@@ -87,11 +87,19 @@ class mancalaCachePit extends JPanel {
 }
 
 public class GameUI extends JPanel {
+	private int numPits = -1;
+	private int numSeeds = -1;
+	private boolean isRandom = false;
 	private Game game; 
 	private JFrame frame;	
 	private JFrame window;
+	private JPanel welcome;
+	private JButton random;
 	private JButton[] buttons;
+	private JButton[] pitOptions;
+	private JButton[] seedOptions;
     private JButton pit0, pit1, pit2, pit3, pit4, pit5, pit6, pit7, pit8, pit9, pit10, pit11, pit12, pit13;
+    private JButton begin;
     private JButton newGame;
     ImageIcon orangePit0, orangePit1, orangePit2, orangePit3, orangePit4, orangePit5, orangePit6, orangePit7,orangePit8, orangePit9;
     ImageIcon bluePit0, bluePit1, bluePit2, bluePit3, bluePit4, bluePit5, bluePit6, bluePit7, bluePit8, bluePit9;
@@ -196,18 +204,117 @@ public class GameUI extends JPanel {
             	game.newGame();
             }
         }
-};  
+}; 
+
+private ActionListener choosePits = new ActionListener()
+{
+	@Override
+    public void actionPerformed(ActionEvent ae) {
+		
+	if (ae.getSource() == pitOptions[0])
+	{
+		numPits = 4;
+	}
+	else if (ae.getSource() == pitOptions[1])
+        {
+            numPits = 5;
+        }
+        else if (ae.getSource() == pitOptions[2])
+        {
+        	numPits = 6;
+        }
+        else if (ae.getSource() == pitOptions[3])
+        {
+        	numPits = 7;
+        }
+        else if (ae.getSource() == pitOptions[4])
+        {
+        	numPits = 8;
+        }
+        else if (ae.getSource() == pitOptions[5]) 
+        {
+        	numPits = 9;
+        }
+		
+		System.out.println("Number of pits: "+ numPits);
+	}
+	
+};
+
+private ActionListener chooseSeeds = new ActionListener()
+{
+	@Override
+    public void actionPerformed(ActionEvent ae) {
+		
+	if (ae.getSource() == seedOptions[0])
+	{
+		numSeeds = 1;
+	}
+	else if (ae.getSource() == seedOptions[1])
+        {
+		numSeeds = 2;
+	}
+        else if (ae.getSource() == seedOptions[2])
+        {
+        	numSeeds = 3;
+        }
+        else if (ae.getSource() == seedOptions[3])
+        {
+        	numSeeds = 4;
+        }
+        else if (ae.getSource() == seedOptions[4])
+        {
+        	numSeeds = 5;
+        }
+        else if (ae.getSource() == seedOptions[5]) 
+        {
+        	numSeeds = 6;
+        }
+        else if (ae.getSource() == seedOptions[6])
+        {
+        	numSeeds = 7;
+        }
+        else if (ae.getSource() == seedOptions[7])
+        {
+        	numSeeds = 8;
+        }
+        else if (ae.getSource() == seedOptions[8])
+        {
+        	numSeeds = 9;
+        }
+        else if (ae.getSource() == seedOptions[9]) 
+        {
+        	numSeeds = 10;
+        }
+        else if (ae.getSource() == random)
+        {
+        	if (isRandom == true)
+        	{
+        		isRandom = false;
+        	}
+        	else 
+        	{
+        		isRandom = true;
+        	}
+        	System.out.println("Random!");
+        }
+        else if (ae.getSource() == begin)
+        {
+        	try {
+    			displayGUI();
+    		} catch (IOException e1) {
+    			// TODO Auto-generated catch block
+    			e1.printStackTrace();
+    		}
+        	game.newGame(0, numPits, numSeeds);
+        }
+		System.out.println("Number of seeds: "+ numSeeds);
+	}
+	
+};
 	
 	public void displayGUI(Game game) throws IOException {
-		this.game = game;
 		buttons = new JButton[14];
-		
-		//Create Window
-		window = new JFrame("Mancala");
-		window.setSize(1266,687);
-		window.setMaximumSize(new Dimension(1266,687));
-		window.setMinimumSize(new Dimension(1200, 600));
-		window.setResizable(true);
 		
 		//Set background
 		JLabel background = new JLabel(createNewBackgroundImage("images/mancalaBoard.jpg"));
@@ -355,6 +462,85 @@ public class GameUI extends JPanel {
 		window.add(new JButton("Button 4"), c);
 		
 		//Exit options and visibility status
+		window.setVisible(true);
+		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+	
+	public void displayWelcome(Game game) throws IOException {
+		this.game = game;
+		
+		//Create Window
+		window = new JFrame("Mancala");
+		window.setSize(1266,687);
+		window.setMaximumSize(new Dimension(1266,687));
+		window.setMinimumSize(new Dimension(1200, 600));
+		window.setResizable(true);
+		
+		welcome = new JPanel();
+		welcome.setBackground(Color.ORANGE);
+		
+		JLabel welcomeLabel = new JLabel("Welcome to Kalah!");
+		JLabel pitsLabel = new JLabel("Choose the number of pits");
+		JLabel seedsLabel = new JLabel("Choose the number of seeds");
+		JLabel randomLabel = new JLabel("Select if you would like the seeds to be randomized");
+		
+		welcomeLabel.setFont(new Font("Serif", Font.PLAIN, 50));
+		pitsLabel.setFont(new Font("Serif", Font.PLAIN, 20));
+		seedsLabel.setFont(new Font("Serif", Font.PLAIN, 20));
+		randomLabel.setFont(new Font("Serif", Font.PLAIN, 20));
+		
+		pitOptions = new JButton[6];
+		seedOptions = new JButton[10];
+		random = new JButton("Randomize");
+		begin = new JButton("Begin!");
+		
+		welcome.setLayout(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+
+		c.gridwidth = 10;
+		c.fill = GridBagConstraints.CENTER;
+		
+		c.gridy = 0;
+		welcome.add(welcomeLabel, c);
+		
+		c.gridy = 2;
+		welcome.add(pitsLabel, c);
+		
+		c.gridy = 4;
+		welcome.add(seedsLabel, c);
+		
+		c.gridy = 6;
+		welcome.add(randomLabel, c);
+		
+		c.gridwidth = 1;
+		c.gridy = 3;
+		
+		for (int i = 0; i < 6; i++) {
+			c.gridx = i + 3;
+			pitOptions[i] = new JButton(String.valueOf(i + 4));
+			pitOptions[i].addActionListener(choosePits);
+			welcome.add(pitOptions[i], c);
+		}
+
+		c.gridy = 5;
+		
+		for (int i = 0; i < 10; i++) {
+			c.gridx = i + 1;
+			seedOptions[i] = new JButton(String.valueOf(i + 1));
+			seedOptions[i].addActionListener(chooseSeeds);
+			welcome.add(seedOptions[i], c);
+		}
+		
+		c.gridx = 5;
+		c.gridy = 7;
+		random.addActionListener(chooseSeeds);
+		welcome.add(random, c);
+		
+		c.gridy = 9;
+		begin.addActionListener(chooseSeeds);
+		welcome.add(begin, c);
+		
+		window.add(welcome);
 		window.setVisible(true);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
