@@ -21,14 +21,18 @@ public class Game {
 	private int kalahPosition1 = 0;
 	private int kalahPosition2 = 0;
 	private static GameUI gameGUI;
+	private static AIeasy ai1;
 	 
 	public Game() {
-		newGame(0,6,4);
+		newGame(1,6,4);
 	}
 	
 	// initialize the game
 	public void newGame (int playMode, int numHouses, int numPebbles) {
 		MODE = playMode;
+		if (MODE == 1) {
+			 ai1 = new AIeasy();
+		}
 		NUMPEBBLES = numPebbles;
 		NUMHOUSES = numHouses;
 		// boardSize = number of pits * 2 (for 2 players) + 2 kalahs
@@ -66,6 +70,14 @@ public class Game {
 			return -1;
 		}
 		return board[houseNum];
+	}
+	
+	public int getNumHouses () {
+		return NUMHOUSES;
+	}
+	
+	public int getNumPebbles () {
+		return NUMPEBBLES;
 	}
 	
 	public boolean isPositionValid (int position) {
@@ -155,9 +167,6 @@ public class Game {
 	
 	public void claimPebbles (int position) {
 		int oppositePosition = (NUMHOUSES*2) - position;
-		System.out.println("The oppositePosition is: " + oppositePosition);
-		System.out.println("The position in claimPebbles is: " + position);
-		System.out.println("The numPebbles is: " + NUMHOUSES);
 		if (turn == "p1" && position >= 0 && position < kalahPosition1 && board[position] == 1 && board[oppositePosition] != 0){
 			board[kalahPosition1] += board[position] + board[oppositePosition];
 			board[position] = 0;
@@ -185,51 +194,14 @@ public class Game {
 			else if (turn == "p2" && position != kalahPosition2) {
 				turn = "p1";
 			}
-			System.out.println(turn);
+			System.out.println("TURN: " + turn);
 		}
 		else { // AI mode 
-			turn = "p2";
-			int endPosition = 0;
-			do {
-			if (!isEmpty()) {
-				int house;
-				do {
-					house = (int) (Math.random() * 6 + 7);
-				} while (boardInfo(house) == 0); 
-				System.out.println("AI house: " + house);
-			
-				int numPebbles = board[house];
-				endPosition = (house + numPebbles) % 14;
-				if (numPebbles + house <= 13){
-					dispersePebbles(house+1,house+numPebbles);
-				}
-				else {
-					dispersePebbles(house+1,13);
-					numPebbles = numPebbles - (13-house);
-					int numLoops = numPebbles/13;
-					while (numLoops > 0) {
-						dispersePebbles(0,5);
-						dispersePebbles(7,13);
-						numPebbles -= 13;
-						--numLoops;
-					}
-					if (numPebbles < 6){
-						dispersePebbles(0,numPebbles-1);
-					}
-					else {
-						dispersePebbles(0,5);
-						dispersePebbles(7,numPebbles);
-					}
-				}
-				board[house] = 0;
-				claimPebbles(endPosition);
-				for (int i = 0; i < 14; ++i) {
-					System.out.println("number of pebbles in house " + i + " is: " + board[i]);
-				}
-				System.out.println("End position: " + endPosition);
-				}
-			} while (endPosition == 13);
-			turn = "p1";
+			if (position != kalahPosition1) {
+				turn = "p2";
+				ai1.AImove(this,board);
+				turn = "p1";
+			}
 		}
 	}
 	
@@ -278,22 +250,13 @@ public class Game {
 			board[position] = 0;
 			claimPebbles(endPosition);
 			/********* FOR DEBUGGING ***********/
-			for (int i = 0; i < 14; ++i) {
+			for (int i = 0; i < boardSize; ++i) {
 				System.out.println("number of pebbles in house " + i + " is: " + board[i]);
 			}
-			System.out.println("End position: " + endPosition);
 			/********* FOR DEBUGGING ***********/
-			if (MODE == 0) {
-				checkTurn(endPosition);
-			}
-			else { // AI
-				if (endPosition != kalahPosition1) {
-					checkTurn(endPosition);
-				}
-			}
+			checkTurn(endPosition);
 		}
 		else {
-			// GUI show "invalid position" message
 			System.out.println("Invalid position");
 		}
 	}
