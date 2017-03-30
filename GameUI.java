@@ -221,11 +221,14 @@ public class GameUI extends JPanel {
     		}
             if (ae.getSource() == newGame) {
             	game.newGame(playMode, numHouses, numSeeds);
-            	
+            	updateRequired = true;
             }
             else if (ae.getSource() == selectionMenu) {
             	try {
+            		window.remove(gameBoard);
 					displayWelcome();
+					window.add(welcome);
+					window.validate();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -266,7 +269,10 @@ public class GameUI extends JPanel {
 	        else if (ae.getSource() == begin)
 	        {
 	        	try {
+	        		window.remove(welcome);
 	    			displayGUI();
+	    			window.add(gameBoard);
+	    			window.validate();
 	    		} catch (IOException e1) {
 	    			// TODO Auto-generated catch block
 	    			e1.printStackTrace();
@@ -293,8 +299,8 @@ public class GameUI extends JPanel {
 		window.setMaximumSize(new Dimension(x, y));
 		window.setMinimumSize(new Dimension(1200, 600));
 		window.setResizable(false);
-		displayGUI();
-		window.add(gameBoard);
+		displayWelcome();
+		window.add(welcome);
 		window.setVisible(true);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
@@ -400,7 +406,7 @@ public class GameUI extends JPanel {
 	
 	public void displayWelcome() throws IOException {
 		
-		welcome = new JPanel();
+		welcome = new boardJPanel(x, y);
 		
 		JLabel welcomeLabel = new JLabel("Welcome to Kalah!");
 		JLabel housesLabel = new JLabel("Choose the number of houses");
@@ -462,10 +468,6 @@ public class GameUI extends JPanel {
 		c.gridy = 9;
 		begin.addActionListener(welcomeListener);
 		welcome.add(begin, c);
-		
-		window.add(welcome);
-		window.setVisible(true);
-		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
 	int waitForClick() {
