@@ -4,7 +4,7 @@ public class AIeasy {
 		this.game = game;
 		int endPosition = 0;
 		int NUMHOUSES = game.getNumHouses();
-		int NUMPEBBLES = game.getNumPebbles();
+		int NUMSEEDS = game.getNumSeeds();
 		int boardsize = NUMHOUSES*2+2;
 		int kalah1 = NUMHOUSES;
 		int kalah2 = boardsize - 1;
@@ -17,33 +17,33 @@ public class AIeasy {
 				} while (game.boardInfo(house) == 0); 
 				System.out.println("AI house: " + house);
 			
-				int numPebbles = game.boardInfo(house);
-				endPosition = (house + numPebbles) % boardsize;
-				if (numPebbles + house <= kalah2){
-					game.dispersePebbles(house+1,house+numPebbles);
+				int numSeeds = game.boardInfo(house);
+				endPosition = (house + numSeeds) % boardsize;
+				if (numSeeds + house <= kalah2){
+					game.disperseSeeds(house+1,house+numSeeds);
 				}
 				else {
-					game.dispersePebbles(house+1,kalah2);
-					numPebbles = numPebbles - (kalah2-house);
-					int numLoops = numPebbles/ (boardsize - 1);
+					game.disperseSeeds(house+1,kalah2);
+					numSeeds = numSeeds - (kalah2-house);
+					int numLoops = numSeeds/ (boardsize - 1);
 					while (numLoops > 0) {
-						game.dispersePebbles(0,kalah1-1);
-						game.dispersePebbles(kalah1+1,kalah2);
-						numPebbles -= kalah2;
+						game.disperseSeeds(0,kalah1-1);
+						game.disperseSeeds(kalah1+1,kalah2);
+						numSeeds -= kalah2;
 						--numLoops;
 					}
-					if (numPebbles < kalah1){
-						game.dispersePebbles(0,numPebbles-1);
+					if (numSeeds < kalah1){
+						game.disperseSeeds(0,numSeeds-1);
 					}
 					else {
-						game.dispersePebbles(0,kalah1-1);
-						game.dispersePebbles(kalah1 + 1,numPebbles);
+						game.disperseSeeds(0,kalah1-1);
+						game.disperseSeeds(kalah1 + 1,numSeeds);
 					}
 				}
 				board[house] = 0;
-				game.claimPebbles(endPosition);
+				game.claimSeeds(endPosition);
 				for (int i = 0; i < boardsize; ++i) {
-					System.out.println("number of pebbles in house " + i + " is: " + board[i]);
+					System.out.println("number of Seeds in house " + i + " is: " + board[i]);
 				}
 				}
 			} while (endPosition == kalah2);
