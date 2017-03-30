@@ -251,12 +251,14 @@ public class GameUI extends JPanel {
 				if (ae.getSource() == seedOptions[i])
 				{
 					numSeeds = i + 1;
+					System.out.println("Number of seeds: "+ numSeeds);
 				}
 			}
 			for(int i = 0; i < houseOptions.length; ++i) {
 				if (ae.getSource() == houseOptions[i])
 				{
-					numHouses = i + 4;
+					numHouses = i + 5;
+					System.out.println("Number of houses: " + numHouses);
 				}
 			}
 	        if (ae.getSource() == random)
@@ -270,6 +272,9 @@ public class GameUI extends JPanel {
 	        {
 	        	try {
 	        		window.remove(welcome);
+	        		game.newGame(playMode, numHouses, numSeeds);
+	        		buttons = new JButton[2*numHouses + 2];
+	        		clickableHouses = new mancalaClickableHouse[2*numHouses];
 	    			displayGUI();
 	    			window.add(gameBoard);
 	    			window.validate();
@@ -277,9 +282,7 @@ public class GameUI extends JPanel {
 	    			// TODO Auto-generated catch block
 	    			e1.printStackTrace();
 	    		}
-	        	game.newGame(0, numHouses, numSeeds);
 	        }
-			System.out.println("Number of seeds: "+ numSeeds);
 		}
 		
 	};
@@ -408,10 +411,10 @@ public class GameUI extends JPanel {
 		
 		welcome = new boardJPanel(x, y);
 		
-		JLabel welcomeLabel = new JLabel("Welcome to Kalah!");
-		JLabel housesLabel = new JLabel("Choose the number of houses");
-		JLabel seedsLabel = new JLabel("Choose the number of seeds");
-		JLabel randomLabel = new JLabel("Select if you would like the seeds to be randomized");
+		JLabel welcomeLabel = new JLabel("Welcome to Kalah!", SwingConstants.CENTER);
+		JLabel housesLabel = new JLabel("Choose the number of houses", SwingConstants.CENTER);
+		JLabel seedsLabel = new JLabel("Choose the number of seeds", SwingConstants.CENTER);
+		JLabel randomLabel = new JLabel("Select if you would like the seeds to be randomized", SwingConstants.CENTER);
 		
 		welcomeLabel.setFont(new Font("Serif", Font.PLAIN, 50));
 		housesLabel.setFont(new Font("Serif", Font.PLAIN, 20));
@@ -425,9 +428,10 @@ public class GameUI extends JPanel {
 		
 		welcome.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.anchor = GridBagConstraints.CENTER;
 
 		c.gridwidth = 10;
-		c.fill = GridBagConstraints.CENTER;
 		
 		c.gridy = 0;
 		welcome.add(welcomeLabel, c);
@@ -444,9 +448,10 @@ public class GameUI extends JPanel {
 		c.gridwidth = 1;
 		c.gridy = 3;
 		
+		//Number of Houses Selection
 		for (int i = 0; i < 6; i++) {
-			c.gridx = i + 3;
-			houseOptions[i] = new JButton(String.valueOf(i + 4));
+			c.gridx = i + 2;
+			houseOptions[i] = new JButton(String.valueOf(i + 5));
 			houseOptions[i].addActionListener(welcomeListener);
 			welcome.add(houseOptions[i], c);
 		}
@@ -454,13 +459,14 @@ public class GameUI extends JPanel {
 		c.gridy = 5;
 		
 		for (int i = 0; i < 10; i++) {
-			c.gridx = i + 1;
+			c.gridx = i;
 			seedOptions[i] = new JButton(String.valueOf(i + 1));
 			seedOptions[i].addActionListener(welcomeListener);
 			welcome.add(seedOptions[i], c);
 		}
 		
-		c.gridx = 5;
+		c.gridwidth = 4;
+		c.gridx = 3;
 		c.gridy = 7;
 		random.addActionListener(welcomeListener);
 		welcome.add(random, c);
