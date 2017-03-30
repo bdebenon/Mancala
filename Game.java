@@ -204,6 +204,7 @@ public class Game {
 			if (position != kalahPosition1) {
 				turn = "p2";
 				ai1.AImove(this,board);
+				gameGUI.updateBoard(this, board);
 				turn = "p1";
 			}
 		}

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.GridLayout;
+import java.util.Random;
 
 /*****Beginning of Helper Classes*****/
 class ImagePanel extends JPanel {
@@ -162,7 +163,6 @@ public class GameUI extends JPanel {
 	private int numSeeds;
 	private int playMode;
 	private int x, y;
-	private boolean isRandom = false;
 	private Game game; 
 	private JFrame window;
 	private JLayeredPane boardLayers;
@@ -173,9 +173,10 @@ public class GameUI extends JPanel {
 	private JButton[] seedOptions;
     private JButton[] mancalaHouses;
     private JButton orangeCache, blueCache;
-    private JButton random, begin;
+    private JButton random, begin, playerVsPlayer, easyMode, mediumMode, hardMode;
     private JButton newGame,selectionMenu,options,quit;
     private JLabel playerTurn;
+    private JLabel houses, seeds, mode;
     private mancalaClickableHouse[] clickableHouses;
     private int houseClicked;
     private boolean updateRequired = false;
@@ -263,10 +264,8 @@ public class GameUI extends JPanel {
 			}
 	        if (ae.getSource() == random)
 	        {
-	        	if (isRandom == true)
-	        		isRandom = false;
-	        	else 
-	        		isRandom = true;
+	        	Random rand = new Random();
+	        	numSeeds = rand.nextInt(9) + 1;
 	        }
 	        else if (ae.getSource() == begin)
 	        {
@@ -283,9 +282,26 @@ public class GameUI extends JPanel {
 	    			e1.printStackTrace();
 	    		}
 	        }
+	        else if (ae.getSource() == playerVsPlayer)
+	        {
+	        	playMode = 0;
+	        }
+	        else if (ae.getSource() == easyMode)
+	        {
+	        	playMode = 1;
+	        }
+	        else if (ae.getSource() == mediumMode)
+	        {
+	        	playMode = 2;
+	        }
+	        else if (ae.getSource() == hardMode)
+	        {
+	        	playMode = 3;
+	        }
+	        updateWelcome();
 		}
-		
 	};
+	
 	public void GUIHandler(Game _game, int _playMode, int _numHouses, int _numSeeds) throws IOException {
 		this.game = _game;
 		this.playMode = _playMode;
@@ -415,11 +431,13 @@ public class GameUI extends JPanel {
 		JLabel housesLabel = new JLabel("Choose the number of houses", SwingConstants.CENTER);
 		JLabel seedsLabel = new JLabel("Choose the number of seeds", SwingConstants.CENTER);
 		JLabel randomLabel = new JLabel("Select if you would like the seeds to be randomized", SwingConstants.CENTER);
+		JLabel gameModeLabel = new JLabel("Choose which mode would you like to play on", SwingConstants.CENTER);
 		
 		welcomeLabel.setFont(new Font("Serif", Font.PLAIN, 50));
 		housesLabel.setFont(new Font("Serif", Font.PLAIN, 20));
 		seedsLabel.setFont(new Font("Serif", Font.PLAIN, 20));
 		randomLabel.setFont(new Font("Serif", Font.PLAIN, 20));
+		gameModeLabel.setFont(new Font("Serif", Font.PLAIN, 20));
 		
 		houseOptions = new JButton[6];
 		seedOptions = new JButton[10];
@@ -431,33 +449,38 @@ public class GameUI extends JPanel {
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.anchor = GridBagConstraints.CENTER;
 
+		//Welcome Label
 		c.gridwidth = 10;
-		
 		c.gridy = 0;
+		c.gridx = 0;
 		welcome.add(welcomeLabel, c);
 		
-		c.gridy = 2;
+		//House Label
+		c.gridwidth = 10;
+		c.gridy = 1;
 		welcome.add(housesLabel, c);
 		
-		c.gridy = 4;
-		welcome.add(seedsLabel, c);
-		
-		c.gridy = 6;
-		welcome.add(randomLabel, c);
-		
-		c.gridwidth = 1;
-		c.gridy = 3;
-		
 		//Number of Houses Selection
+		c.gridwidth = 1;
+		c.gridy = 2;
 		for (int i = 0; i < 6; i++) {
 			c.gridx = i + 2;
 			houseOptions[i] = new JButton(String.valueOf(i + 5));
 			houseOptions[i].addActionListener(welcomeListener);
 			welcome.add(houseOptions[i], c);
 		}
-
-		c.gridy = 5;
 		
+		//Seed Label
+		c.insets = new Insets(10,0,0,0);
+		c.gridx = 0;
+		c.gridwidth = 10;
+		c.gridy = 3;
+		welcome.add(seedsLabel, c);
+		
+		//Number of Seeds Selection
+		c.insets = new Insets(0,0,0,0);
+		c.gridwidth = 1;
+		c.gridy = 4;
 		for (int i = 0; i < 10; i++) {
 			c.gridx = i;
 			seedOptions[i] = new JButton(String.valueOf(i + 1));
@@ -465,13 +488,84 @@ public class GameUI extends JPanel {
 			welcome.add(seedOptions[i], c);
 		}
 		
+		//Random Label
+		c.insets = new Insets(10,0,0,0);
+		c.gridwidth = 10;
+		c.gridx = 0;
+		c.gridy = 5;
+		welcome.add(randomLabel, c);
+		
+		//Randomize Button
+		c.insets = new Insets(0,0,0,0);
 		c.gridwidth = 4;
 		c.gridx = 3;
-		c.gridy = 7;
+		c.gridy = 6;
 		random.addActionListener(welcomeListener);
 		welcome.add(random, c);
 		
-		c.gridy = 9;
+		//Game Mode Label
+		c.insets = new Insets(10,0,0,0);
+		c.gridwidth = 10;
+		c.gridy = 7;
+		c.gridx = 0;
+		welcome.add(gameModeLabel, c);
+		
+		//Game Mode Buttons
+		c.insets = new Insets(0,0,0,0);
+		c.gridwidth = 2;
+		playerVsPlayer = new JButton("PvP");
+		c.gridy = 8;
+		c.gridx = 1;
+		playerVsPlayer.addActionListener(welcomeListener);
+		welcome.add(playerVsPlayer, c);
+		
+		easyMode = new JButton("Easy");
+		c.gridy = 8;
+		c.gridx = 3;
+		easyMode.addActionListener(welcomeListener);
+		welcome.add(easyMode, c);
+		
+		mediumMode = new JButton("Medium");
+		c.gridy = 8;
+		c.gridx = 5;
+		mediumMode.addActionListener(welcomeListener);
+		welcome.add(mediumMode, c);
+		
+		hardMode = new JButton("Hard");
+		c.gridy = 8;
+		c.gridx = 7;
+		hardMode.addActionListener(welcomeListener);
+		welcome.add(hardMode, c);
+		
+		//Text Feedback
+		 c.insets = new Insets(20,0,0,0);
+		 houses = new JLabel("Houses: " + numHouses, SwingConstants.CENTER);
+		 houses.setFont(new Font("Serif", Font.PLAIN, 20));
+		 c.gridwidth = 4;
+		 c.gridx = 3;
+		 c.gridy = 9;
+		 welcome.add(houses, c);
+		 
+		 c.insets = new Insets(0,0,0,0);
+		 seeds = new JLabel("Seeds: " + numSeeds, SwingConstants.CENTER);
+		 seeds.setFont(new Font("Serif", Font.PLAIN, 20));
+		 c.gridwidth = 4;
+		 c.gridx = 3;
+		 c.gridy = 10;
+		 welcome.add(seeds, c);
+		 
+		 mode = new JLabel("Mode: " + getText(playMode), SwingConstants.CENTER);
+		 mode.setFont(new Font("Serif", Font.PLAIN, 20));
+		 c.gridwidth = 4;
+		 c.gridx = 3;
+		 c.gridy = 11;
+		 welcome.add(mode, c);
+		
+		//Being Button
+		c.insets = new Insets(20,0,0,0);
+		c.gridwidth = 4;
+		c.gridx = 3;
+		c.gridy = 12;
 		begin.addActionListener(welcomeListener);
 		welcome.add(begin, c);
 	}
@@ -494,7 +588,37 @@ public class GameUI extends JPanel {
 		return house;
 	}
 	
-	void updateBoard(Game _game, int [] board) { //Called each time a Game Object is clicked
+	String getText(int playerMode) {
+		String returnString;
+		switch(playerMode) {
+			case 0:
+				returnString = "PvP";
+				break;
+			case 1:
+				returnString = "Easy";
+				break;
+			case 2:
+				returnString = "Medium";
+				break;
+			case 3:
+				returnString = "Hard";
+				break;
+			default:
+				returnString = "Error";
+				break;
+		}
+		return returnString;
+	}
+	
+	//Called each time a Welcome Screen Object is clicked
+	void updateWelcome() {
+		houses.setText("Houses: " + numHouses);
+		seeds.setText("Seeds: " + numSeeds);
+		mode.setText("Mode: " + getText(playMode));	
+	}
+	
+	//Called each time a Game Object is clicked
+	void updateBoard(Game _game, int [] board) {
 		//Update houses
 		if(_game.turn == "p1")
 			playerTurn.setText("Player 1's Turn");
