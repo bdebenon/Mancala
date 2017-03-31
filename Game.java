@@ -201,7 +201,6 @@ public class Game {
 		else { // AI mode 
 			if (position != kalahPosition1) {
 				turn = "p2";
-<<<<<<< HEAD
 				if (MODE == 1) {
 					ai1.AImove(this,board);
 				}
@@ -211,10 +210,6 @@ public class Game {
 				if (MODE == 3) {
 					ai3.AImove(board);
 				}
-=======
-				ai1.AImove(this,board);
-				gameGUI.updateBoard(this, board);
->>>>>>> c07590de6eb7eda3116156be1da6e562e589bfcd
 				turn = "p1";
 			}
 		}
