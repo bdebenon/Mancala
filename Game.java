@@ -23,6 +23,8 @@ public class Game {
 	private int kalahPosition2 = 0;
 	private static GameUI gameGUI;
 	private static AIeasy ai1;
+	private static AImedium ai2;
+	private static AIhard ai3;
 	 
 	public Game() {
 		newGame(0,6,4);
@@ -33,10 +35,6 @@ public class Game {
 	
 	// initialize the game
 	public void newGame (int playMode, int numHouses, int numSeeds) {
-		MODE = playMode;
-		if (MODE == 1) {
-			 ai1 = new AIeasy();
-		}
 		NUMSEEDS = numSeeds;
 		NUMHOUSES = numHouses;
 		// boardSize = number of Houses * 2 (for 2 players) + 2 kalahs
@@ -52,21 +50,17 @@ public class Game {
 				board[i] = NUMSEEDS;
 			}
 		}
+		MODE = playMode;
+		if (MODE == 1) {
+			 ai1 = new AIeasy();
+		}
+		if (MODE == 2) {
+			ai2 = new AImedium(this);
+		}
+		if (MODE == 3) {
+			ai3 = new AIhard(this);
+		}
 		turn = "p1";
-	}
-	
-	public void newGame () {
-		// board = new int[14];   
-		// for (int i = 0; i < 14; ++i) {
-			// if (i==6 || i == 13){
-				// board[i] = 0;
-			// }
-			// else {
-				// board[i] = NUMSEEDS;
-			// }
-		// }
-		// turn = "p1";
-		// gameGUI.updateBoard(board);
 	}
 	
 	public int boardInfo (int houseNum) {
@@ -82,6 +76,10 @@ public class Game {
 	
 	public int getNumSeeds () {
 		return NUMSEEDS;
+	}
+	
+	public int[] getBoard () {
+		return board;
 	}
 	
 	public boolean isPositionValid (int position) {
@@ -203,8 +201,20 @@ public class Game {
 		else { // AI mode 
 			if (position != kalahPosition1) {
 				turn = "p2";
+<<<<<<< HEAD
+				if (MODE == 1) {
+					ai1.AImove(this,board);
+				}
+				if (MODE == 2) {
+					ai2.AImove(board);
+				}
+				if (MODE == 3) {
+					ai3.AImove(board);
+				}
+=======
 				ai1.AImove(this,board);
 				gameGUI.updateBoard(this, board);
+>>>>>>> c07590de6eb7eda3116156be1da6e562e589bfcd
 				turn = "p1";
 			}
 		}
