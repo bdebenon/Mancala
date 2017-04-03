@@ -206,13 +206,8 @@ public class AImedium {
 		
 		for (int i : pMoves) {
 			int[] tempBoard = boardMove(orgtempBoard,i,true);
-			System.out.println("Round: " + i);
-			for (int j = 0 ; j < tempBoard.length; ++j) {
-				System.out.println("Number of seeds in " + j + " is " + tempBoard[j]);
-			}
 			if (tempBoard[kalah2] > totalSeeds/2) {
 				bestMove = i;
-				System.out.println("HELLLLOOOO");
 				return bestMove;
 			}
 			System.arraycopy(board,0,orgtempBoard,0,board.length);
@@ -221,7 +216,6 @@ public class AImedium {
 			int[] tempBoard = boardMove(orgtempBoard,j,true);
 			if (endPosition == kalah2) {
 				bestMove = j;
-				System.out.println("HELLLLOOOO___2");
 				return bestMove;
 			}
 			System.arraycopy(board,0,orgtempBoard,0,board.length);
@@ -232,7 +226,6 @@ public class AImedium {
 			if (currVal > bestValue) {
 				bestValue = currVal;
 				bestMove = m;
-				System.out.println("HELLLLOOOO __3");
 			}
 		}
 		return bestMove;
