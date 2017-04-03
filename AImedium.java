@@ -25,18 +25,17 @@ public class AImedium {
 	
 	private int[] generatePossibleMoves (int[] board, boolean isComputer) {
 		List<Integer> pMoves = new ArrayList<Integer>();
-		
-		int[] currBoard = board;
+
 		if (!isComputer) {  // if human player 
 			for (int i = 0; i < kalah1; ++i) {
-				if (currBoard[i] > 0) {
+				if (board[i] > 0) {
 					pMoves.add(i);
 				}
 			}
 		}
 		else {
 			for (int i = kalah1+1; i < kalah2; ++i) {
-				if (currBoard[i] > 0) {
+				if (board[i] > 0) {
 					pMoves.add(i);
 				}
 			}
@@ -45,6 +44,9 @@ public class AImedium {
 		int[] possibleMoves = new int[pMoves.size()];
 		for (int i = 0; i < pMoves.size(); ++i) {
 			possibleMoves[i] = pMoves.get(i);
+		}
+		for (int i = 0; i < possibleMoves.length; ++i) {
+			System.out.println("Possible moves: " + possibleMoves[i]);
 		}
 		return possibleMoves;
 	}
@@ -76,7 +78,8 @@ public class AImedium {
 	}
 	
 	private int[] boardMove (int[] board, int position, boolean isComputer) {
-		int[] tempBoard = board;
+		int[] tempBoard = new int[board.length];
+		System.arraycopy(board,0,tempBoard,0,board.length);
 		int numSeeds = tempBoard[position];
 		endPosition = (position + numSeeds) % boardsize;
 		if (!isComputer) {
@@ -197,36 +200,49 @@ public class AImedium {
 		int alpha = Integer.MIN_VALUE;
 		int beta = Integer.MAX_VALUE;
 		int totalSeeds = NUMHOUSES * NUMSEEDS;
-		int[] tempBoard = board;
+		int[] orgtempBoard = new int[board.length];
+		System.arraycopy(board,0,orgtempBoard,0,board.length);
 		int[] pMoves = generatePossibleMoves(board,true);
+		
 		for (int i : pMoves) {
-			tempBoard = boardMove(tempBoard,i,true);
+			int[] tempBoard = boardMove(orgtempBoard,i,true);
+			System.out.println("Round: " + i);
+			for (int j = 0 ; j < tempBoard.length; ++j) {
+				System.out.println("Number of seeds in " + j + " is " + tempBoard[j]);
+			}
 			if (tempBoard[kalah2] > totalSeeds/2) {
 				bestMove = i;
+				System.out.println("HELLLLOOOO");
 				return bestMove;
 			}
-			tempBoard = board;
+			System.arraycopy(board,0,orgtempBoard,0,board.length);
 		}
 		for (int j : pMoves) {
-			tempBoard = boardMove(tempBoard,j,true);
+			int[] tempBoard = boardMove(orgtempBoard,j,true);
 			if (endPosition == kalah2) {
 				bestMove = j;
+				System.out.println("HELLLLOOOO___2");
 				return bestMove;
 			}
-			tempBoard = board;
+			System.arraycopy(board,0,orgtempBoard,0,board.length);
 		}
 		for (int m : pMoves) {
-			currVal = minimax (tempBoard, m, this.depth, true, alpha, beta);
+			currVal = minimax (orgtempBoard, m, this.depth, true, alpha, beta);
+			System.out.println("current Value: " + currVal);
 			if (currVal > bestValue) {
 				bestValue = currVal;
 				bestMove = m;
+				System.out.println("HELLLLOOOO __3");
 			}
 		}
 		return bestMove;
 	}
 	
 	public void AImove (int [] board) {
-		int[] tempBoard = board;
+		int[] tempBoard = new int[board.length];
+		System.arraycopy(board,0,tempBoard,0,board.length);
+		// need a do-while loop here to check for endPosition == kalah2
+		
 		if (!game.isEmpty()) {
 			int house = generateBestMove(tempBoard);
 			System.out.println("AI house: " + house);

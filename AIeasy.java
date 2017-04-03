@@ -1,6 +1,6 @@
 public class AIeasy {
 	private Game game;
-	void AImove (Game game, int [] board) {
+	public void AImove (Game game, int [] board) {
 		this.game = game;
 		int endPosition = 0;
 		int NUMHOUSES = game.getNumHouses();
@@ -45,7 +45,10 @@ public class AIeasy {
 				for (int i = 0; i < boardsize; ++i) {
 					System.out.println("number of Seeds in house " + i + " is: " + board[i]);
 				}
-				}
-			} while (endPosition == kalah2);
+			}
+			else {
+				break;
+			}
+		} while (endPosition == kalah2);
 	}
 }
