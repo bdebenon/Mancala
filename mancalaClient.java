@@ -6,6 +6,7 @@ public class mancalaClient {
    public static void main(String [] args) {
       String serverName = args[0];
       int PORT = 43594;
+      GameUI gameGUI = new GameUI();
       try {
          System.out.println("Connecting to " + serverName + " on port " + PORT);
          Socket client = new Socket(serverName, PORT);

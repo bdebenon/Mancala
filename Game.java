@@ -6,6 +6,7 @@ import javax.swing.*;
 
 
 public class Game {
+	public boolean severMODE = true; //CHANGE THIS FOR SERVER VS LOCAL MODES
 	public String turn;   // p1 (player 1) or p2 (player 2)
 	private boolean twoPlayer; 
 	private static int [] board;
