@@ -1,12 +1,23 @@
-import java.util.*;
 import java.io.IOException;
+import java.util.concurrent.Exchanger;
+import java.util.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.net.*;
+import java.io.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.SynchronousQueue;
 
-
-public class Game {
-	public boolean severMODE = true; //CHANGE THIS FOR SERVER VS LOCAL MODES
+		
+public class Game implements Runnable {
+	//GAME
 	public String turn;   // p1 (player 1) or p2 (player 2)
 	private boolean twoPlayer; 
 	private static int [] board;
@@ -26,12 +37,77 @@ public class Game {
 	private static AIeasy ai1;
 	private static AImedium ai2;
 	private static AIhard ai3;
-	 
-	public Game() {
-		newGame(0,6,4);
+	private final BlockingQueue<int []> boardQueueIn;
+	private final BlockingQueue<int []> boardQueueOut;
+	
+	public Game(BlockingQueue<int[]> _boardQueueIn, BlockingQueue<int[]> _boardQueueOut) {
+		boardQueueIn = _boardQueueIn;
+		boardQueueOut = _boardQueueOut;
+		System.out.println("Game Instance Created");
+		}
+
+	String intArrayToString(int [] intArray) {
+		String convertedString = "";
+		for(int i = 0; i < intArray.length; ++i) {
+			if(i != 0) convertedString += "_";
+			convertedString += Integer.toString(intArray[i]);
+		}
+		return convertedString;
 	}
-	public Game(int playMode, int numHouses, int numSeeds) {
-		newGame(playMode,numHouses,numSeeds);
+	
+	int [] stringToIntArray(String _string) {
+		String[] tokens = _string.split("_");
+		int [] convertedIntArray = new int[tokens.length];
+		for(int i = 0; i < tokens.length; ++i) {
+			convertedIntArray[i] = Integer.parseInt(tokens[i]);
+		}
+		return convertedIntArray;
+	}
+	
+	int [] createSendPacket() {
+		int [] playerTurn = new int[1];
+		if(turn == "p1")
+			playerTurn[0] = 1;
+		else
+			playerTurn[0] = 2;
+		int [] info = new int[1 + board.length];
+		System.arraycopy(playerTurn, 0, info, 0, 1);
+		System.arraycopy(board, 0, info, 1, board.length);
+		return info;
+	}
+	public void run () {
+		try {
+			//Game game = new Game(); //POTENTIAL ERROR
+			//Game game = this;
+			//ADDED TO  mancalaClient gameGUI = new GameUI();
+			//gameGUI.displayWelcome(game);
+			newGame(0,6,4);
+			boardQueueOut.put(new int [] {0,0,6,4});
+			
+			//gameGUI.GUIHandler(game, 0, 6, 4);
+			while (true) {
+				//ADDED TO  mancalaClient if((house = gameGUI.waitForClick()) >= 0) {
+				int [] incoming = boardQueueIn.take();
+				if(incoming[2] == 0) {
+					System.out.println("Move - " + incoming[1]);
+					move(incoming[1]);
+					//ADDED TO  mancalaClient gameGUI.updateBoard(game, board);
+					boardQueueOut.put(createSendPacket());
+					if (isEmpty()){
+						lastMove();
+						isOver();
+						//gameGUI.updateBoard(game, board);
+						boardQueueOut.put(createSendPacket());
+						break;
+					}
+				}
+			}
+		} catch (InterruptedException ex) {
+			//TODO
+		}
+	}
+	int produce() {
+		return 1;
 	}
 	
 	// initialize the game
@@ -56,10 +132,10 @@ public class Game {
 			 ai1 = new AIeasy();
 		}
 		if (MODE == 2) {
-			ai2 = new AImedium(this);
+			//TODO ai2 = new AImedium(this);
 		}
 		if (MODE == 3) {
-			ai3 = new AIhard(this);
+			//TODO ai3 = new AIhard(this);
 		}
 		turn = "p1";
 	}
@@ -203,7 +279,7 @@ public class Game {
 			if (position != kalahPosition1) {
 				turn = "p2";
 				if (MODE == 1) {
-					ai1.AImove(this,board);
+					//TODO ai1.AImove(this,board);
 				}
 				if (MODE == 2) {
 					ai2.AImove(board);
@@ -269,32 +345,6 @@ public class Game {
 		}
 		else {
 			System.out.println("Invalid position");
-		}
-	}
-	
-	public static void main (String [] args) {
-		Game game = new Game();
-		gameGUI = new GameUI();
-		try {
-			//gameGUI.displayWelcome(game);
-			game.newGame(0,6,4);
-			gameGUI.GUIHandler(game, 0, 6, 4);
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		int house;
-		while (true) {
-			if((house = gameGUI.waitForClick()) >= 0) {
-				game.move(house);
-				gameGUI.updateBoard(game, board);
-				if (game.isEmpty()){
-					game.lastMove();
-					game.isOver();
-					gameGUI.updateBoard(game, board);
-					break;
-				}
-			}
 		}
 	}
 }

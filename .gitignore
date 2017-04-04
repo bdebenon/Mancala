@@ -16,3 +16,9 @@
 /mancalaClickableHouse.class
 /mancalaClient.class
 /networkHandler.class
+/AIhard.class
+/AImedium.class
+/Server.class
+/Server$runObject.class
+/Network.class
+/clientNetwork.class

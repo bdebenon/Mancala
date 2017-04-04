@@ -12,19 +12,21 @@ import java.io.IOException;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.GridLayout;
+import java.util.Arrays;
 import java.util.Random;
+import java.util.concurrent.BlockingQueue;
 
-public class GameUI extends JPanel {
+public class GameUI extends JPanel implements Runnable {
 	/**Creates and manages the GUI side of Game.java
 	 *NOTE: The serialVersionUID is used for version identification
 	 *(Make sure that the GUI and Game are on the 'same page')
 	 */
 	private static final long serialVersionUID = 1; //Used for version identification (Make sure that the GUI and Game are on the 'same page')
+	private int playersTurn;
 	private int numHouses;
 	private int numSeeds;
 	private int playMode;
-	private int x, y;
-	private Game game; 
+	private int x, y; 
 	private JFrame window;
 	private JLayeredPane boardLayers;
 	private JPanel welcome, backgroundPane;
@@ -41,6 +43,14 @@ public class GameUI extends JPanel {
     private mancalaClickableHouse[] clickableHouses;
     private int houseClicked;
     private boolean updateRequired = false;
+    private final BlockingQueue<int []> informationQueueIn;
+    private final BlockingQueue<int []> informationQueueOut;
+    
+    public GameUI (BlockingQueue<int []> _informationQueueIn, BlockingQueue<int []> _informationQueueOut) {
+    	playersTurn = 1;
+    	informationQueueIn = _informationQueueIn;
+    	informationQueueOut = _informationQueueOut;
+    }
     
     ImageIcon createNewHouseImage(String iconName) {
     	ImageIcon resizedImageIcon = new ImageIcon(iconName);
@@ -82,7 +92,13 @@ public class GameUI extends JPanel {
                 }
     		}
             if (ae.getSource() == newGame) {
-            	game.newGame(playMode, numHouses, numSeeds);
+            	int [] info = {0, playMode, numHouses, numSeeds};
+            	try {
+					informationQueueOut.put(info);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             	updateRequired = true;
             }
             else if (ae.getSource() == selectionMenu) {
@@ -132,7 +148,13 @@ public class GameUI extends JPanel {
 	        {
 	        	try {
 	        		window.remove(welcome);
-	        		game.newGame(playMode, numHouses, numSeeds);
+	            	int [] info = {playMode, numHouses, numSeeds};
+	            	try {
+						informationQueueOut.put(info);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 	        		buttons = new JButton[2*numHouses + 2];
 	        		clickableHouses = new mancalaClickableHouse[2*numHouses];
 	    			displayGUI();
@@ -163,8 +185,7 @@ public class GameUI extends JPanel {
 		}
 	};
 	
-	public void GUIHandler(Game _game, int _playMode, int _numHouses, int _numSeeds) throws IOException {
-		this.game = _game;
+	public void GUIHandler(int _playMode, int _numHouses, int _numSeeds) throws IOException {
 		this.playMode = _playMode;
 		this.numHouses = _numHouses;
 		this.numSeeds = _numSeeds;
@@ -479,14 +500,44 @@ public class GameUI extends JPanel {
 	}
 	
 	//Called each time a Game Object is clicked
-	void updateBoard(Game _game, int [] board) {
+	void updateBoard(int [] board, boolean changeTurn) {
 		//Update houses
-		if(_game.turn == "p1")
-			playerTurn.setText("Player 1's Turn");
-		else
-			playerTurn.setText("Player 2's Turn");
+		if(changeTurn) {
+			if(playersTurn == 1) {
+				playerTurn.setText("Player 2's Turn");
+				playersTurn = 2;
+			} else {
+				playerTurn.setText("Player 1's Turn");
+				playersTurn = 1;
+			}
+		}
 		for(int i = 0; i < board.length; ++i) {
 			buttons[i].setText(Integer.toString(board[i]));
+		}
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		int[] info;
+		try {
+			info = informationQueueIn.take();
+			int[] board = Arrays.copyOfRange(info, 1, info.length);
+			switch(info[0]) {
+			case 0: //Start Game
+				GUIHandler(info[1], info[2], info[3]);
+				break;
+			case 1: //Updated Board Sent With No Turn Change
+				updateBoard(board, false);
+				break;
+			case 2: //Updated Board Sent With Turn Change
+				updateBoard(board, true);
+				break;
+			}
+			
+		} catch (InterruptedException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }
