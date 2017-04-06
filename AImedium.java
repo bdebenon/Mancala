@@ -162,8 +162,6 @@ public class AImedium {
 		int currValue;
 		int[] tempBoard = Arrays.copyOf(board,boardsize);
 		
-		// System.out.println(Arrays.toString(tempBoard));
-		
 		if (isComputer) {
 			bestValue = Integer.MIN_VALUE;
 		}
@@ -173,14 +171,9 @@ public class AImedium {
 		
 		if (depth == 0 || generatePossibleMoves(board,isComputer).length == 0) {
 			int temp = evaluateMove(board,isComputer);
-			// System.out.println("PRINTING evaluating board: ");
-			// System.out.println(Arrays.toString(board));
-			// System.out.println("Evaluating move: " + temp);
 			return temp;
-			// return evaluateMove(board, isComputer);
 		}
 		else if (isComputer) {
-			// System.out.println("COMPUTER");
             for (int i : generatePossibleMoves(board,true)) {
 				tempBoard = boardMove(tempBoard,movePosition,true);
                 currValue = minimax(tempBoard, i, depth-1, false, alpha, beta);
@@ -188,18 +181,12 @@ public class AImedium {
             }
 		}
 		else {
-			// System.out.println("HUMAN");
             for (int i : generatePossibleMoves(board,false)) {
 				tempBoard = boardMove(tempBoard,movePosition,false);
                 currValue = minimax(tempBoard, i, depth-1, true, alpha, beta);
                 bestValue = Math.min(bestValue, currValue);
-				// if (bestValue == 7) {
-					// System.out.println("TARGET: " + i);
-				// }
             }
 		}
-		// System.out.println("WILL IT GET HERE******************************");
-		// System.out.println("BEST VALUE::::: " + bestValue);
 		return bestValue;
 	}
 	/******* EVALUATE MOVES ***************/
