@@ -308,7 +308,7 @@ public class Game implements Runnable {
 						disperseSeeds(0,kalahPosition2-1);
 						--numLoops;
 					}
-					disperseSeeds(0,numSeeds % (boardSize-1));
+					disperseSeeds(0,numSeeds % (boardSize-1) - 1);
 				}
 			}
 			else {
