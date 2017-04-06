@@ -1,13 +1,9 @@
-import java.util.*;
-import java.io.IOException;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.util.concurrent.BlockingQueue;
 
-
-public class Game {
+		
+public class Game implements Runnable {
+	//GAME
 	public String turn;   // p1 (player 1) or p2 (player 2)
-	private boolean twoPlayer; 
 	private static int [] board;
 	private int boardSize;
 	private int totalSeed1;
@@ -21,16 +17,94 @@ public class Game {
 	private int NUMHOUSES;
 	private int kalahPosition1 = 0;
 	private int kalahPosition2 = 0;
-	private static GameUI gameGUI;
 	private static AIeasy ai1;
 	private static AImedium ai2;
 	private static AIhard ai3;
-	 
-	public Game() {
-		newGame(0,6,4);
+	private final BlockingQueue<String> boardQueueIn;
+	private final BlockingQueue<String> boardQueueOut;
+	
+	public Game(BlockingQueue<String> _boardQueueIn, BlockingQueue<String> _boardQueueOut) {
+		boardQueueIn = _boardQueueIn;
+		boardQueueOut = _boardQueueOut;
+		System.out.println("Game Instance Created");
+		}
+
+	String intArrayToString(int [] intArray) {
+		String convertedString = "";
+		for(int i = 0; i < intArray.length; ++i) {
+			if(i != 0) convertedString += "_";
+			convertedString += Integer.toString(intArray[i]);
+		}
+		return convertedString;
 	}
-	public Game(int playMode, int numHouses, int numSeeds) {
-		newGame(playMode,numHouses,numSeeds);
+	
+	int [] stringToIntArray(String _string) {
+		String[] tokens = _string.split("_");
+		int [] convertedIntArray = new int[tokens.length];
+		for(int i = 0; i < tokens.length; ++i) {
+			convertedIntArray[i] = Integer.parseInt(tokens[i]);
+		}
+		return convertedIntArray;
+	}
+	
+	String createUpdatePacket() {
+		String turnInformation = new String("");
+		turnInformation += "MOVE";
+		if(turn == "p1")
+			turnInformation += "_p1";
+		else
+			turnInformation += "_p2";
+		for(int i = 0; i < board.length; ++i) {
+			turnInformation += "_";
+			turnInformation += Integer.toString(board[i]);
+		}
+		return turnInformation;
+	}
+	public void run () {
+		boolean stop = false;
+		while (!stop) {
+			try {
+				String [] incoming = (boardQueueIn.take()).split("_");
+				System.out.println("Command Received: " + incoming[0]);
+				switch(incoming[0]) {
+				case "ACK":
+					System.out.println("SubCommand Received: " + incoming[1]);
+					switch(incoming[1]) {
+					case "READY":
+						boardQueueOut.put("ACK_BEGIN");
+						System.out.println("Check if sent");
+						break;
+					case "OK":
+						boardQueueOut.put("ACK_WELCOME");
+						break;
+					case "GAMEINFO":
+						newGame(Integer.parseInt(incoming[2]), Integer.parseInt(incoming[3]), Integer.parseInt(incoming[4]));
+						boardQueueOut.put(createUpdatePacket());
+						break;
+					}
+					break;
+				case "MOVE":
+					move(Integer.parseInt(incoming[2]));
+					if (isEmpty()){
+						lastMove();
+						isOver();
+						boardQueueOut.put(createUpdatePacket());
+						break;
+					}
+					break;
+				case "SELECTION":
+					//TODO
+					break;
+				case "OPTIONS":
+					break;
+				case "EXIT":
+					System.out.println("Client Terminated Game.");
+					throw new InterruptedException("Client Disconnected");
+				}
+			} catch (InterruptedException ex) {
+			stop = true;
+			}
+		}
 	}
 	
 	// initialize the game
@@ -42,6 +116,8 @@ public class Game {
 		board = new int[boardSize];
 		kalahPosition1 = NUMHOUSES;
 		kalahPosition2 = boardSize - 1;
+		System.out.println("Play Mode: " + playMode);
+		//System.out.println("seeds " + NUMSEEDS + ". Houses: " + NUMHOUSES + ". KalahPosition2: " + kalahPosition2);
 		for (int i = 0; i < boardSize; ++i) {
 			if (i== kalahPosition1 || i == kalahPosition2){
 				board[i] = 0;
@@ -55,10 +131,10 @@ public class Game {
 			 ai1 = new AIeasy();
 		}
 		if (MODE == 2) {
-			ai2 = new AImedium(this);
+			//TODO ai2 = new AImedium(this);
 		}
 		if (MODE == 3) {
-			ai3 = new AIhard(this);
+			//TODO ai3 = new AIhard(this);
 		}
 		turn = "p1";
 	}
@@ -188,7 +264,7 @@ public class Game {
 		}
 	}
 	
-	public void checkTurn (int position){
+	public void checkTurn (int position) throws InterruptedException{
 		if (MODE == 0){
 			if (turn == "p1" && position != kalahPosition1){
 				turn = "p2";
@@ -213,9 +289,10 @@ public class Game {
 				turn = "p1";
 			}
 		}
+		boardQueueOut.put(createUpdatePacket());
 	}
 	
-	public void move (int position) {
+	public void move (int position) throws InterruptedException {
 		if (isPositionValid(position)){
 			int numSeeds = board[position];
 			int endPosition = (position + numSeeds) % boardSize;
@@ -260,40 +337,19 @@ public class Game {
 			board[position] = 0;
 			claimSeeds(endPosition);
 			/********* FOR DEBUGGING ***********/
-			for (int i = 0; i < boardSize; ++i) {
-				System.out.println("number of seeds in house " + i + " is: " + board[i]);
-			}
+			//for (int i = 0; i < boardSize; ++i) {
+			//	System.out.println("number of seeds in house " + i + " is: " + board[i]);
+			//}
 			/********* FOR DEBUGGING ***********/
 			checkTurn(endPosition);
 		}
 		else {
 			System.out.println("Invalid position");
+			boardQueueOut.put("ACK_ILLEGAL");
 		}
 	}
 	
-	public static void main (String [] args) {
-		Game game = new Game();
-		gameGUI = new GameUI();
-		try {
-			//gameGUI.displayWelcome(game);
-			game.newGame(0,6,4);
-			gameGUI.GUIHandler(game, 0, 6, 4);
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		int house;
-		while (true) {
-			if((house = gameGUI.waitForClick()) >= 0) {
-				game.move(house);
-				gameGUI.updateBoard(game, board);
-				if (game.isEmpty()){
-					game.lastMove();
-					game.isOver();
-					gameGUI.updateBoard(game, board);
-					break;
-				}
-			}
-		}
+	void findNewConnection() {
+		//TODO
 	}
 }

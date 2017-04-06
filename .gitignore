@@ -1,3 +1,4 @@
+/.networkHandler.java.swp
 /Game.class
 /GameUI$1.class
 /GameUI.class
@@ -13,3 +14,11 @@
 /boardJPanel.class
 /mancalaCacheHouse.class
 /mancalaClickableHouse.class
+/mancalaClient.class
+/networkHandler.class
+/AIhard.class
+/AImedium.class
+/Server.class
+/Server$runObject.class
+/Network.class
+/clientNetwork.class
