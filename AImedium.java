@@ -158,16 +158,16 @@ public class AImedium {
 	
 	/******* MINIMAX RECURSION WITH PRUNNING ***************/
 	private int minimax (int[] board, int movePosition, int depth, boolean isComputer, int alpha, int beta) {
-		int bestValue = 0;
+		// int bestValue = 0;
 		int currValue;
 		int[] tempBoard = Arrays.copyOf(board,boardsize);
 		
-		if (isComputer) {
-			bestValue = Integer.MIN_VALUE;
-		}
-		else {
-			bestValue = Integer.MAX_VALUE;
-		}
+		// if (isComputer) {
+			// bestValue = Integer.MIN_VALUE;
+		// }
+		// else {
+			// bestValue = Integer.MAX_VALUE;
+		// }
 		
 		if (depth == 0 || generatePossibleMoves(board,isComputer).length == 0) {
 			int temp = evaluateMove(board,isComputer);
@@ -177,19 +177,29 @@ public class AImedium {
             for (int i : generatePossibleMoves(board,true)) {
 				tempBoard = boardMove(tempBoard,movePosition,true);
                 currValue = minimax(tempBoard, i, depth-1, false, alpha, beta);
-                bestValue = Math.max(bestValue, currValue);
+                // bestValue = Math.max(bestValue, currValue);
+                alpha = Math.max(alpha, currValue);
+				if (beta <= alpha) {
+					break;
+				}
             }
+			return alpha;
 		}
 		else {
             for (int i : generatePossibleMoves(board,false)) {
 				tempBoard = boardMove(tempBoard,movePosition,false);
                 currValue = minimax(tempBoard, i, depth-1, true, alpha, beta);
-                bestValue = Math.min(bestValue, currValue);
+                // bestValue = Math.min(bestValue, currValue);
+                beta = Math.min(beta, currValue);
+				if (beta <= alpha) {
+					break;
+				}
             }
+			return beta;
 		}
-		return bestValue;
+		// return bestValue;
 	}
-	/******* EVALUATE MOVES ***************/
+	/******* DONE ***************/
 	
 	
 	
