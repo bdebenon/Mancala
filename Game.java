@@ -1,25 +1,9 @@
-import java.io.IOException;
-import java.util.concurrent.Exchanger;
-import java.util.*;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import java.net.*;
-import java.io.*;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.SynchronousQueue;
 
 		
 public class Game implements Runnable {
 	//GAME
 	public String turn;   // p1 (player 1) or p2 (player 2)
-	private boolean twoPlayer; 
 	private static int [] board;
 	private int boardSize;
 	private int totalSeed1;
@@ -33,7 +17,6 @@ public class Game implements Runnable {
 	private int NUMHOUSES;
 	private int kalahPosition1 = 0;
 	private int kalahPosition2 = 0;
-	private static GameUI gameGUI;
 	private static AIeasy ai1;
 	private static AImedium ai2;
 	private static AIhard ai3;
@@ -89,7 +72,6 @@ public class Game implements Runnable {
 					case "READY":
 						boardQueueOut.put("ACK_BEGIN");
 						System.out.println("Check if sent");
-						//boardQueueOut.put("INFO_0_6_4");
 						break;
 					case "OK":
 						boardQueueOut.put("ACK_WELCOME");
@@ -295,7 +277,7 @@ public class Game implements Runnable {
 			if (position != kalahPosition1) {
 				turn = "p2";
 				if (MODE == 1) {
-					//TODO ai1.AImove(this,board);
+					ai1.AImove(this,board);
 				}
 				if (MODE == 2) {
 					ai2.AImove(board);
