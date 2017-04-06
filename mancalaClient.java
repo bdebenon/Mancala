@@ -5,11 +5,11 @@ import java.io.*;
 
 
 class clientNetwork implements Runnable {
-	private final BlockingQueue<int []> boardQueue;
+	private final BlockingQueue<String> boardQueue;
 	final Socket server;
 	int mode;
 	
-	clientNetwork(BlockingQueue<int []> _boardQueue, Socket _server, int _mode) {
+	clientNetwork(BlockingQueue<String> _boardQueue, Socket _server, int _mode) {
 		boardQueue = _boardQueue;
 		server = _server;
 		mode = _mode;
@@ -35,12 +35,12 @@ class clientNetwork implements Runnable {
 	
 	void handleInput() throws InterruptedException, IOException {
 	        DataInputStream in = new DataInputStream(server.getInputStream());
-	        boardQueue.put(stringToIntArray(in.readUTF()));
+	        boardQueue.put(in.readUTF());
 	}
 	
 	void handleOutput() throws IOException, InterruptedException {
 	        DataOutputStream out = new DataOutputStream(server.getOutputStream());
-	        out.writeUTF(intArrayToString(boardQueue.take()));
+	        out.writeUTF(boardQueue.take());
 	}
 	
 	public void run () {
@@ -84,22 +84,24 @@ public class mancalaClient {
 	}
 	
    public static void main(String [] args) {
-	   BlockingQueue<int []> informationQueueIn = new SynchronousQueue<int []>();
-	   BlockingQueue<int []> informationQueueOut = new SynchronousQueue<int []>();
-	   String serverName = "0.0.0.0";
-      int PORT = 43594;
+	   
+	  BlockingQueue<String> informationQueueIn = new SynchronousQueue<String>();
+	  BlockingQueue<String> informationQueueOut = new SynchronousQueue<String>();
+	  String serverName = "0.0.0.0";
+	  int PORT = 43594;
       GameUI gameGUI = new GameUI(informationQueueIn, informationQueueOut);
       new Thread(gameGUI).start();
       try {
-         System.out.println("Connecting to " + serverName + " on port " + PORT);
-         Socket client = new Socket(serverName, PORT);
-         System.out.println("Just connected to " + client.getRemoteSocketAddress());
-     	 clientNetwork clientNetworkInput = new clientNetwork(informationQueueIn, client, 0);
-    	 clientNetwork clientNetworkOutput = new clientNetwork(informationQueueOut, client, 1);
- 		 new Thread(clientNetworkInput).start();
- 		 new Thread(clientNetworkOutput).start();
+    	  System.out.println("Connecting to " + serverName + " on port " + PORT);
+    	  Socket client = new Socket(serverName, PORT);
+	      System.out.println("Just connected to " + client.getRemoteSocketAddress());
+	      clientNetwork clientNetworkInput = new clientNetwork(informationQueueIn, client, 0);
+	      clientNetwork clientNetworkOutput = new clientNetwork(informationQueueOut, client, 1);
+	 	  new Thread(clientNetworkInput).start();
+	 	  new Thread(clientNetworkOutput).start();
       } catch(IOException e) {
          e.printStackTrace();
       }
    }
 }
+	

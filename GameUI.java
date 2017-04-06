@@ -1,18 +1,8 @@
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.GridLayout;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 
@@ -22,34 +12,36 @@ public class GameUI extends JPanel implements Runnable {
 	 *(Make sure that the GUI and Game are on the 'same page')
 	 */
 	private static final long serialVersionUID = 1; //Used for version identification (Make sure that the GUI and Game are on the 'same page')
-	private int playersTurn;
-	private int numHouses;
+	volatile private int numHouses;
 	private int numSeeds;
 	private int playMode;
-	private int x, y; 
-	private JFrame window;
-	private JLayeredPane boardLayers;
-	private JPanel welcome, backgroundPane;
-	private boardJPanel gameBoard;
+	volatile private int x, y; 
+	private String turn;
+	final private JFrame window;
+	volatile private JPanel welcome;
+	volatile private boardJPanel gameBoard;
 	private JButton[] buttons;
 	private JButton[] houseOptions;
 	private JButton[] seedOptions;
-    private JButton[] mancalaHouses;
-    private JButton orangeCache, blueCache;
     private JButton random, begin, playerVsPlayer, easyMode, mediumMode, hardMode;
     private JButton newGame,selectionMenu,options,quit;
     private JLabel playerTurn;
     private JLabel houses, seeds, mode;
     private mancalaClickableHouse[] clickableHouses;
     private int houseClicked;
-    private boolean updateRequired = false;
-    private final BlockingQueue<int []> informationQueueIn;
-    private final BlockingQueue<int []> informationQueueOut;
+    private final BlockingQueue<String> informationQueueIn;
+    private final BlockingQueue<String> informationQueueOut;
     
-    public GameUI (BlockingQueue<int []> _informationQueueIn, BlockingQueue<int []> _informationQueueOut) {
-    	playersTurn = 1;
+    public GameUI (BlockingQueue<String> _informationQueueIn, BlockingQueue<String> _informationQueueOut) {
     	informationQueueIn = _informationQueueIn;
     	informationQueueOut = _informationQueueOut;
+		x = 1400;
+		y = 800;
+		numSeeds = 4;
+		numHouses = 6;
+		playMode = 0;
+		turn = "p1";
+		window = new JFrame("Mancala");
     }
     
     ImageIcon createNewHouseImage(String iconName) {
@@ -67,12 +59,10 @@ public class GameUI extends JPanel implements Runnable {
 	    return resizedImageIcon;
     }
     ImageIcon createNewBackgroundImage(String iconName) {
-    	System.out.println("Test");
     	ImageIcon resizedImageIcon = new ImageIcon(iconName);
 	    Image image = resizedImageIcon.getImage(); // transform it 
 	    Image newimg = image.getScaledInstance(1250, 650,  java.awt.Image.SCALE_SMOOTH); // scale it the smooth way  
 	    resizedImageIcon = new ImageIcon(newimg);  // transform it back
-	    System.out.println("Test5");
 	    return resizedImageIcon;
     }
     
@@ -81,43 +71,39 @@ public class GameUI extends JPanel implements Runnable {
     	@Override
         public void actionPerformed(ActionEvent ae)
         {
-    		for(int i = 0; i < clickableHouses.length; ++i) {
-                if (ae.getSource() == clickableHouses[i].getButton())
-                {
-                	if(i < numHouses)
-                		houseClicked = i;
-                	else
-                		houseClicked = i + 1;
-                    updateRequired = true;
-                }
-    		}
-            if (ae.getSource() == newGame) {
-            	int [] info = {0, playMode, numHouses, numSeeds};
-            	try {
-					informationQueueOut.put(info);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-            	updateRequired = true;
-            }
-            else if (ae.getSource() == selectionMenu) {
-            	try {
+    		try {
+	    		for(int i = 0; i < clickableHouses.length; ++i) {
+	                if (ae.getSource() == clickableHouses[i].getButton())
+	                {
+	                	if(i < numHouses)
+	                		houseClicked = i;
+	                	else
+	                		houseClicked = i + 1;
+	                    String move = "MOVE_NULL_" + houseClicked;
+						informationQueueOut.put(move);
+	                }
+	    		}
+	            if (ae.getSource() == newGame) {
+	            	startNewGame();
+	            }
+	            else if (ae.getSource() == selectionMenu) {
             		window.remove(gameBoard);
-					displayWelcome();
+					createWelcome();
 					window.add(welcome);
 					window.validate();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-            }
-            else if (ae.getSource() == options) {
-            	//TODO
-            }
-            else if (ae.getSource() == quit) {
-            	System.exit(0);
-            }
+					informationQueueOut.put("SELECTION");
+	            }
+	            else if (ae.getSource() == options) {
+	            	//TODO
+	            	informationQueueOut.put("OPTIONS");
+	            }
+	            else if (ae.getSource() == quit) {
+	            	informationQueueOut.put("EXIT");
+	            	System.exit(0);
+	            }
+	        } catch (IOException | InterruptedException e1) {
+	        	e1.printStackTrace();
+	        }
         }
     }; 
 
@@ -125,89 +111,78 @@ public class GameUI extends JPanel implements Runnable {
 	{
 		@Override
 	    public void actionPerformed(ActionEvent ae) {
-			for(int i = 0; i < seedOptions.length; ++i) {
-				if (ae.getSource() == seedOptions[i])
-				{
-					numSeeds = i + 1;
-					System.out.println("Number of seeds: "+ numSeeds);
-				}
-			}
-			for(int i = 0; i < houseOptions.length; ++i) {
-				if (ae.getSource() == houseOptions[i])
-				{
-					numHouses = i + 5;
-					System.out.println("Number of houses: " + numHouses);
-				}
-			}
-	        if (ae.getSource() == random)
-	        {
-	        	Random rand = new Random();
-	        	numSeeds = rand.nextInt(9) + 1;
-	        }
-	        else if (ae.getSource() == begin)
-	        {
-	        	try {
-	        		window.remove(welcome);
-	            	int [] info = {playMode, numHouses, numSeeds};
-	            	try {
-						informationQueueOut.put(info);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+			try {
+				for(int i = 0; i < seedOptions.length; ++i) {
+					if (ae.getSource() == seedOptions[i])
+					{
+						numSeeds = i + 1;
+						//System.out.println("Number of seeds: "+ numSeeds);
 					}
-	        		buttons = new JButton[2*numHouses + 2];
-	        		clickableHouses = new mancalaClickableHouse[2*numHouses];
-	    			displayGUI();
-	    			window.add(gameBoard);
-	    			window.validate();
-	    		} catch (IOException e1) {
-	    			// TODO Auto-generated catch block
-	    			e1.printStackTrace();
-	    		}
-	        }
-	        else if (ae.getSource() == playerVsPlayer)
-	        {
-	        	playMode = 0;
-	        }
-	        else if (ae.getSource() == easyMode)
-	        {
-	        	playMode = 1;
-	        }
-	        else if (ae.getSource() == mediumMode)
-	        {
-	        	playMode = 2;
-	        }
-	        else if (ae.getSource() == hardMode)
-	        {
-	        	playMode = 3;
-	        }
-	        updateWelcome();
+				}
+				for(int i = 0; i < houseOptions.length; ++i) {
+					if (ae.getSource() == houseOptions[i])
+					{
+						numHouses = i + 5;
+						//System.out.println("Number of houses: " + numHouses);
+					}
+				}
+		        if (ae.getSource() == random)
+		        {
+		        	Random rand = new Random();
+		        	numSeeds = rand.nextInt(9) + 1;
+		        }
+		        else if (ae.getSource() == begin)
+		        {
+		        	startNewGame();
+		        }
+		        else if (ae.getSource() == playerVsPlayer)
+		        {
+		        	playMode = 0;
+		        }
+		        else if (ae.getSource() == easyMode)
+		        {
+		        	playMode = 1;
+		        }
+		        else if (ae.getSource() == mediumMode)
+		        {
+		        	playMode = 2;
+		        }
+		        else if (ae.getSource() == hardMode)
+		        {
+		        	playMode = 3;
+		        }
+		        updateWelcome();
+			} catch (IOException | InterruptedException e1) {
+	        	e1.printStackTrace();
+			}
 		}
 	};
-	
-	public void GUIHandler(int _playMode, int _numHouses, int _numSeeds) throws IOException {
-		this.playMode = _playMode;
-		this.numHouses = _numHouses;
-		this.numSeeds = _numSeeds;
+	void startNewGame() throws InterruptedException, IOException {
+		window.remove(welcome);
+		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds;
+		informationQueueOut.put(move);
 		buttons = new JButton[2*numHouses + 2];
 		clickableHouses = new mancalaClickableHouse[2*numHouses];
-		x = 1400;
-		y = 800;
-		
+		createGameBoard();
+		window.add(gameBoard);
+		window.validate();
+	}
+	
+	public void createWindow() throws IOException {
 		//Create Window
-		window = new JFrame("Mancala");
 		window.setSize(x, y);
 		window.setMaximumSize(new Dimension(x, y));
 		window.setMinimumSize(new Dimension(1200, 600));
+		createWelcome();
 		window.setResizable(false);
-		displayWelcome();
-		window.add(welcome);
 		window.setVisible(true);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
-	public void displayGUI() throws IOException {
+	public void createGameBoard() throws IOException {
 		//Utilizing the GridBagLayout 
+		buttons = new JButton[2*numHouses + 2];
+		clickableHouses = new mancalaClickableHouse[2*numHouses];
 		gameBoard = new boardJPanel(x, y);
 		gameBoard.setPreferredSize(new Dimension(x,y));
 		GridBagConstraints c = new GridBagConstraints();
@@ -305,7 +280,7 @@ public class GameUI extends JPanel implements Runnable {
 		quit.addActionListener(gameActions);
 	}
 	
-	public void displayWelcome() throws IOException {
+	public void createWelcome() throws IOException {
 		
 		welcome = new boardJPanel(x, y);
 		
@@ -452,22 +427,9 @@ public class GameUI extends JPanel implements Runnable {
 		welcome.add(begin, c);
 	}
 	
-	int waitForClick() {
-		int house;
-		try {
-			Thread.sleep(100);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if(updateRequired == false) {
-			house = -1;
-		} else {
-		updateRequired = false;
-		house = houseClicked;
-		System.out.println(house);
-		}
-		return house;
+	void createWinScreen(int winStatus) {
+		//0 -> Win, 1 -> LOSE, 2 -> TIE
+		System.out.println("Winner Status: " + winStatus);
 	}
 	
 	String getText(int playerMode) {
@@ -500,44 +462,91 @@ public class GameUI extends JPanel implements Runnable {
 	}
 	
 	//Called each time a Game Object is clicked
-	void updateBoard(int [] board, boolean changeTurn) {
-		//Update houses
-		if(changeTurn) {
-			if(playersTurn == 1) {
-				playerTurn.setText("Player 2's Turn");
-				playersTurn = 2;
-			} else {
-				playerTurn.setText("Player 1's Turn");
-				playersTurn = 1;
-			}
+	void updateBoard(String [] board, String _playerTurn) {
+		if(_playerTurn.equalsIgnoreCase("p1")) {
+			playerTurn.setText("Player 1's Turn");
+			turn = "p1";
+		} else if (_playerTurn.equalsIgnoreCase("p2")) {
+			playerTurn.setText("Player 2's Turn");
+			turn = "p2";
+		} else {
+			playerTurn.setText("Thinking...");
 		}
 		for(int i = 0; i < board.length; ++i) {
-			buttons[i].setText(Integer.toString(board[i]));
+			buttons[i].setText(board[i]);
 		}
 	}
-
-	@Override
+	
 	public void run() {
-		// TODO Auto-generated method stub
-		int[] info;
 		try {
-			info = informationQueueIn.take();
-			int[] board = Arrays.copyOfRange(info, 1, info.length);
-			switch(info[0]) {
-			case 0: //Start Game
-				GUIHandler(info[1], info[2], info[3]);
-				break;
-			case 1: //Updated Board Sent With No Turn Change
-				updateBoard(board, false);
-				break;
-			case 2: //Updated Board Sent With Turn Change
-				updateBoard(board, true);
-				break;
-			}
-			
-		} catch (InterruptedException | IOException e) {
+			informationQueueOut.put("ACK_READY");
+		} catch (InterruptedException e1) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e1.printStackTrace();
+		}
+		while(true) {
+			String [] info;
+			try {
+				info = (informationQueueIn.take()).split("_");
+				System.out.println("Command Recieved: " + info[0]);
+				switch(info[0]) {
+				case "INFO": //Start Game
+					//TODO
+					break;
+				case "MOVE": //Updated Board Sent With No Turn Change
+					String _playerTurn = info[1];
+					String [] board = new String [info.length-2];
+					for(int i = 2; i < info.length; ++i) {
+						board[i-2] = info[i];
+					}
+					updateBoard(board, _playerTurn);
+					break;
+				case "ACK":
+					System.out.println("SubCommand Recieved: " + info[1]);
+					switch(info[1]) {
+					case "BEGIN":
+						//TODO
+						createWindow();
+						informationQueueOut.put("ACK_OK");
+						break;
+					case "WELCOME":
+						//TODO
+	            		//window.remove(gameBoard);
+						window.add(welcome);
+						window.validate();
+						break;
+					case "ILLEGAL":
+						if(turn.equalsIgnoreCase("p1")) {
+							playerTurn.setText("Player 1's Turn\nILLEGAL MOVE");
+							//TODO make this go on two lines
+							turn = "p1";
+						} else if (turn.equalsIgnoreCase("p2")) {
+							playerTurn.setText("Player 2's Turn\nILLEGAL MOVE");
+							turn = "p2";
+						}
+						break;
+					case "TIME":
+						//TODO
+						break;
+					case "WINNER":
+						createWinScreen(0);
+						break;
+					case "LOSER":
+						createWinScreen(1);
+						break;
+					case "TIE":
+						createWinScreen(2);
+						break;
+					case "OK":
+						//TODO
+						break;
+					}
+					break;
+				}
+			} catch (InterruptedException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 }
