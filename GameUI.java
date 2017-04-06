@@ -12,18 +12,18 @@ public class GameUI extends JPanel implements Runnable {
 	 *(Make sure that the GUI and Game are on the 'same page')
 	 */
 	private static final long serialVersionUID = 1; //Used for version identification (Make sure that the GUI and Game are on the 'same page')
-	volatile private int numHouses;
+	private int numHouses;
 	private int numSeeds;
 	private int playMode;
-	volatile private int x, y; 
-	private String turn;
+	private int x, y; 
+	static private String turn;
 	final private JFrame window;
-	volatile private JPanel welcome;
-	volatile private boardJPanel gameBoard;
+	private JPanel welcome;
+	private boardJPanel gameBoard;
 	private JButton[] buttons;
 	private JButton[] houseOptions;
 	private JButton[] seedOptions;
-    private JButton random, begin, playerVsPlayer, easyMode, mediumMode, hardMode;
+	private JButton random, begin, playerVsPlayer, easyMode, mediumMode, hardMode;
     private JButton newGame,selectionMenu,options,quit;
     private JLabel playerTurn;
     private JLabel houses, seeds, mode;
@@ -32,7 +32,7 @@ public class GameUI extends JPanel implements Runnable {
     private final BlockingQueue<String> informationQueueIn;
     private final BlockingQueue<String> informationQueueOut;
     
-    public GameUI (BlockingQueue<String> _informationQueueIn, BlockingQueue<String> _informationQueueOut) {
+    public GameUI (BlockingQueue<String> _informationQueueIn, BlockingQueue<String> _informationQueueOut) throws IOException {
     	informationQueueIn = _informationQueueIn;
     	informationQueueOut = _informationQueueOut;
 		x = 1400;
@@ -42,28 +42,6 @@ public class GameUI extends JPanel implements Runnable {
 		playMode = 0;
 		turn = "p1";
 		window = new JFrame("Mancala");
-    }
-    
-    ImageIcon createNewHouseImage(String iconName) {
-    	ImageIcon resizedImageIcon = new ImageIcon(iconName);
-	    Image image = resizedImageIcon.getImage(); // transform it 
-	    Image newimg = image.getScaledInstance(109, 134,  java.awt.Image.SCALE_SMOOTH); // scale it the smooth way  
-	    resizedImageIcon = new ImageIcon(newimg);  // transform it back
-	    return resizedImageIcon;
-    }
-    ImageIcon createNewCacheImage(String iconName) {
-    	ImageIcon resizedImageIcon = new ImageIcon(iconName);
-	    Image image = resizedImageIcon.getImage(); // transform it 
-	    Image newimg = image.getScaledInstance(109, 509,  java.awt.Image.SCALE_SMOOTH); // scale it the smooth way  
-	    resizedImageIcon = new ImageIcon(newimg);  // transform it back
-	    return resizedImageIcon;
-    }
-    ImageIcon createNewBackgroundImage(String iconName) {
-    	ImageIcon resizedImageIcon = new ImageIcon(iconName);
-	    Image image = resizedImageIcon.getImage(); // transform it 
-	    Image newimg = image.getScaledInstance(1250, 650,  java.awt.Image.SCALE_SMOOTH); // scale it the smooth way  
-	    resizedImageIcon = new ImageIcon(newimg);  // transform it back
-	    return resizedImageIcon;
     }
     
 	private ActionListener gameActions = new ActionListener()
@@ -84,7 +62,7 @@ public class GameUI extends JPanel implements Runnable {
 	                }
 	    		}
 	            if (ae.getSource() == newGame) {
-	            	startNewGame();
+	            	newGame();
 	            }
 	            else if (ae.getSource() == selectionMenu) {
             		window.remove(gameBoard);
@@ -122,7 +100,11 @@ public class GameUI extends JPanel implements Runnable {
 				for(int i = 0; i < houseOptions.length; ++i) {
 					if (ae.getSource() == houseOptions[i])
 					{
-						numHouses = i + 5;
+						numHouses = i + 4;
+						if(numHouses > 6)
+							x = 1750;
+						else
+							x = 1400;
 						//System.out.println("Number of houses: " + numHouses);
 					}
 				}
@@ -133,7 +115,7 @@ public class GameUI extends JPanel implements Runnable {
 		        }
 		        else if (ae.getSource() == begin)
 		        {
-		        	startNewGame();
+		        	begin();
 		        }
 		        else if (ae.getSource() == playerVsPlayer)
 		        {
@@ -157,33 +139,34 @@ public class GameUI extends JPanel implements Runnable {
 			}
 		}
 	};
-	void startNewGame() throws InterruptedException, IOException {
+	void begin() throws InterruptedException, IOException {
 		window.remove(welcome);
+		createGameBoard();
 		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds;
 		informationQueueOut.put(move);
-		buttons = new JButton[2*numHouses + 2];
-		clickableHouses = new mancalaClickableHouse[2*numHouses];
-		createGameBoard();
 		window.add(gameBoard);
 		window.validate();
+	}
+	
+	void newGame() throws InterruptedException {
+		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds;
+		informationQueueOut.put(move);
 	}
 	
 	public void createWindow() throws IOException {
 		//Create Window
 		window.setSize(x, y);
-		window.setMaximumSize(new Dimension(x, y));
-		window.setMinimumSize(new Dimension(1200, 600));
 		createWelcome();
-		window.setResizable(false);
 		window.setVisible(true);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
 	public void createGameBoard() throws IOException {
+		window.setSize(x, y);
+		gameBoard = new boardJPanel(x, y);
 		//Utilizing the GridBagLayout 
 		buttons = new JButton[2*numHouses + 2];
 		clickableHouses = new mancalaClickableHouse[2*numHouses];
-		gameBoard = new boardJPanel(x, y);
 		gameBoard.setPreferredSize(new Dimension(x,y));
 		GridBagConstraints c = new GridBagConstraints();
 		
@@ -203,26 +186,54 @@ public class GameUI extends JPanel implements Runnable {
 		//Creates all the orange houses
 		c.gridy = 0;
 		int j = numHouses*2-1;
-		for(int i = 0; i < numHouses; ++i) {
-			c.gridx = i + 1;
-			clickableHouses[j] = new mancalaClickableHouse(2, numSeeds);
-			buttons[j+1] = clickableHouses[j].getButton();
-			gameBoard.add(clickableHouses[j].getButton(), c);
-			clickableHouses[j].getButton().addActionListener(gameActions);
-			--j;
+		if(numHouses != 4) {
+			for(int i = 0; i < numHouses; ++i) {
+				c.gridx = i + 1;
+				clickableHouses[j] = new mancalaClickableHouse(2, numSeeds);
+				buttons[j+1] = clickableHouses[j].getButton();
+				gameBoard.add(clickableHouses[j].getButton(), c);
+				clickableHouses[j].getButton().addActionListener(gameActions);
+				--j;
+			}
+		} else { //Fixes odd alignment of 4
+			for(int i = 0; i < numHouses; ++i) {
+				if(i <= 1)
+					c.gridx = i + 1;
+				else
+					c.gridx = i + 2;
+				clickableHouses[j] = new mancalaClickableHouse(2, numSeeds);
+				buttons[j+1] = clickableHouses[j].getButton();
+				gameBoard.add(clickableHouses[j].getButton(), c);
+				clickableHouses[j].getButton().addActionListener(gameActions);
+				--j;
+			}
 		}
 		
 		//Creating all the blue houses
 		c.anchor = GridBagConstraints.PAGE_END;
 		c.gridy = 2;
 		j = 0;
-		for(int i = 0; i < numHouses; ++i) { //Creates all the orange houses
-			c.gridx = i + 1;
-			clickableHouses[j] = new mancalaClickableHouse(1, numSeeds);
-			buttons[j] = clickableHouses[j].getButton();
-			gameBoard.add(clickableHouses[j].getButton(), c);
-			clickableHouses[j].getButton().addActionListener(gameActions);
-			++j;
+		if(numHouses != 4) {
+			for(int i = 0; i < numHouses; ++i) { //Creates all the orange houses
+				c.gridx = i + 1;
+				clickableHouses[j] = new mancalaClickableHouse(1, numSeeds);
+				buttons[j] = clickableHouses[j].getButton();
+				gameBoard.add(clickableHouses[j].getButton(), c);
+				clickableHouses[j].getButton().addActionListener(gameActions);
+				++j;
+			}
+		} else {
+			for(int i = 0; i < numHouses; ++i) { //Fixes odd alignment of 4
+				if(i <= 1)
+					c.gridx = i + 1;
+				else
+					c.gridx = i + 2;
+				clickableHouses[j] = new mancalaClickableHouse(1, numSeeds);
+				buttons[j] = clickableHouses[j].getButton();
+				gameBoard.add(clickableHouses[j].getButton(), c);
+				clickableHouses[j].getButton().addActionListener(gameActions);
+				++j;
+			}
 		}
 
 		//Add in both user cache houses
@@ -231,7 +242,10 @@ public class GameUI extends JPanel implements Runnable {
 		c.gridheight = 3;
 		
 		//Blue Cache house
-		c.gridx = numHouses + 1;
+		if(numHouses != 4)
+			c.gridx = numHouses + 1;
+		else
+			c.gridx = numHouses + 2;
 		mancalaCacheHouse _blueCache = new mancalaCacheHouse(1);
 		buttons[numHouses] = _blueCache.getButton();
 		gameBoard.add(_blueCache.getButton(), c);
@@ -265,25 +279,34 @@ public class GameUI extends JPanel implements Runnable {
 			c.gridx = numHouses / 2 + 1;
 			c.gridwidth = 1;
 		}
+		if(numHouses == 4) {
+			c.gridx = numHouses / 2 + 1;
+			c.gridwidth = 1;
+			c.insets = new Insets(100,30,0,30);
+		}
 		playerTurn = new JLabel("Player 1's Turn", SwingConstants.CENTER);
 		gameBoard.add(playerTurn, c);
 		
+		c.insets = new Insets(100,0,0,0);
 		c.gridwidth = 1;
 		c.gridx = numHouses - 1;
+		if(numHouses == 4)
+			c.gridx = numHouses;
 		selectionMenu = new JButton("Selection Menu");
 		gameBoard.add(selectionMenu, c);
 		selectionMenu.addActionListener(gameActions);
 		
 		c.gridx = numHouses;
+		if(numHouses == 4)
+			c.gridx = numHouses + 1;
 		quit = new JButton("Quit");
 		gameBoard.add(quit, c);
 		quit.addActionListener(gameActions);
 	}
 	
 	public void createWelcome() throws IOException {
-		
+		window.setSize(x, y);
 		welcome = new boardJPanel(x, y);
-		
 		JLabel welcomeLabel = new JLabel("Welcome to Kalah!", SwingConstants.CENTER);
 		JLabel housesLabel = new JLabel("Choose the number of houses", SwingConstants.CENTER);
 		JLabel seedsLabel = new JLabel("Choose the number of seeds", SwingConstants.CENTER);
@@ -322,7 +345,7 @@ public class GameUI extends JPanel implements Runnable {
 		c.gridy = 2;
 		for (int i = 0; i < 6; i++) {
 			c.gridx = i + 2;
-			houseOptions[i] = new JButton(String.valueOf(i + 5));
+			houseOptions[i] = new JButton(String.valueOf(i + 4));
 			houseOptions[i].addActionListener(welcomeListener);
 			welcome.add(houseOptions[i], c);
 		}
@@ -418,7 +441,7 @@ public class GameUI extends JPanel implements Runnable {
 		 c.gridy = 11;
 		 welcome.add(mode, c);
 		
-		//Being Button
+		//Begin Button
 		c.insets = new Insets(20,0,0,0);
 		c.gridwidth = 4;
 		c.gridx = 3;
@@ -517,11 +540,11 @@ public class GameUI extends JPanel implements Runnable {
 						break;
 					case "ILLEGAL":
 						if(turn.equalsIgnoreCase("p1")) {
-							playerTurn.setText("Player 1's Turn\nILLEGAL MOVE");
+							playerTurn.setText("<html><span>Player 1's Turn<br>ILLEGAL MOVE</span></html>");
 							//TODO make this go on two lines
 							turn = "p1";
 						} else if (turn.equalsIgnoreCase("p2")) {
-							playerTurn.setText("Player 2's Turn\nILLEGAL MOVE");
+							playerTurn.setText("<html><span>Player 2's Turn<br>ILLEGAL MOVE</span></html>");
 							turn = "p2";
 						}
 						break;

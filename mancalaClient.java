@@ -89,9 +89,9 @@ public class mancalaClient {
 	  BlockingQueue<String> informationQueueOut = new SynchronousQueue<String>();
 	  String serverName = "0.0.0.0";
 	  int PORT = 43594;
-      GameUI gameGUI = new GameUI(informationQueueIn, informationQueueOut);
-      new Thread(gameGUI).start();
       try {
+          GameUI gameGUI = new GameUI(informationQueueIn, informationQueueOut);
+          new Thread(gameGUI).start();
     	  System.out.println("Connecting to " + serverName + " on port " + PORT);
     	  Socket client = new Socket(serverName, PORT);
 	      System.out.println("Just connected to " + client.getRemoteSocketAddress());

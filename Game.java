@@ -47,7 +47,7 @@ public class Game implements Runnable {
 		return convertedIntArray;
 	}
 	
-	String createSendPacket() {
+	String createUpdatePacket() {
 		String turnInformation = new String("");
 		turnInformation += "MOVE";
 		if(turn == "p1")
@@ -61,7 +61,8 @@ public class Game implements Runnable {
 		return turnInformation;
 	}
 	public void run () {
-		while (true) {
+		boolean stop = false;
+		while (!stop) {
 			try {
 				String [] incoming = (boardQueueIn.take()).split("_");
 				System.out.println("Command Received: " + incoming[0]);
@@ -78,6 +79,7 @@ public class Game implements Runnable {
 						break;
 					case "GAMEINFO":
 						newGame(Integer.parseInt(incoming[2]), Integer.parseInt(incoming[3]), Integer.parseInt(incoming[4]));
+						boardQueueOut.put(createUpdatePacket());
 						break;
 					}
 					break;
@@ -86,7 +88,7 @@ public class Game implements Runnable {
 					if (isEmpty()){
 						lastMove();
 						isOver();
-						boardQueueOut.put(createSendPacket());
+						boardQueueOut.put(createUpdatePacket());
 						break;
 					}
 					break;
@@ -95,13 +97,12 @@ public class Game implements Runnable {
 					break;
 				case "OPTIONS":
 					break;
-				case "EXIT:":
+				case "EXIT":
 					System.out.println("Client Terminated Game.");
-					findNewConnection();
-					break;
+					throw new InterruptedException("Client Disconnected");
 				}
 			} catch (InterruptedException ex) {
-			//TODO
+			stop = true;
 			}
 		}
 	}
@@ -288,7 +289,7 @@ public class Game implements Runnable {
 				turn = "p1";
 			}
 		}
-		boardQueueOut.put(createSendPacket());
+		boardQueueOut.put(createUpdatePacket());
 	}
 	
 	public void move (int position) throws InterruptedException {
