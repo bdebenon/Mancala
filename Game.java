@@ -88,8 +88,6 @@ public class Game implements Runnable {
 					if (isEmpty()){
 						lastMove();
 						isOver();
-						boardQueueOut.put(createUpdatePacket());
-						break;
 					}
 					break;
 				case "SELECTION":
@@ -131,10 +129,10 @@ public class Game implements Runnable {
 			 ai1 = new AIeasy();
 		}
 		if (MODE == 2) {
-			//TODO ai2 = new AImedium(this);
+			ai2 = new AImedium(this);
 		}
 		if (MODE == 3) {
-			//TODO ai3 = new AIhard(this);
+			ai3 = new AIhard(this);
 		}
 		turn = "p1";
 	}
@@ -192,16 +190,23 @@ public class Game implements Runnable {
 		return winner;
 	}
 	
-	public boolean isOver () {
+	public boolean isOver () throws InterruptedException {
 		String result = checkWinner();
+		boardQueueOut.put(createUpdatePacket());
 		if (!result.equals("none")) {
 			if (result.equals("tie")){
-				System.out.println("TIE");
-				System.out.println("Game Over");
+				boardQueueOut.put("ACK_TIE");
+				//System.out.println("TIE");
+				//System.out.println("Game Over");
 			}
 			else {
-				System.out.println("The winner is " + result);
-				System.out.println("Game Over");
+				if(result.equals("p1")) {
+				boardQueueOut.put("WINNER");	
+				} else {
+				boardQueueOut.put("LOSER");
+				}
+				//System.out.println("The winner is " + result);
+				//System.out.println("Game Over");
 			}
 			return true;
 		}
