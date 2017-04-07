@@ -158,6 +158,7 @@ public class GameUI extends JPanel implements Runnable {
 		window.setSize(x, y);
 		createWelcome();
 		window.setVisible(true);
+		window.setResizable(false);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
