@@ -149,16 +149,16 @@ public class AIhard {
 	
 	/******* MINIMAX RECURSION WITH PRUNNING ***************/
 	private int minimax (int[] board, int movePosition, int depth, boolean isComputer, int alpha, int beta) {
-		// int bestValue = 0;
+		int bestValue = 0;
 		int currValue;
 		int[] tempBoard = Arrays.copyOf(board,boardsize);
 		
-		// if (isComputer) {
-			// bestValue = Integer.MIN_VALUE;
-		// }
-		// else {
-			// bestValue = Integer.MAX_VALUE;
-		// }
+		if (isComputer) {
+			bestValue = Integer.MIN_VALUE;
+		}
+		else {
+			bestValue = Integer.MAX_VALUE;
+		}
 		
 		if (depth == 0 || generatePossibleMoves(board,isComputer).length == 0) {
 			int temp = evaluateMove(board,isComputer);
@@ -167,6 +167,24 @@ public class AIhard {
 		else if (isComputer) {
             for (int i : generatePossibleMoves(board,true)) {
 				tempBoard = boardMove(tempBoard,movePosition,true);
+
+				int tempVal = -100;
+				int targetMove = -1;
+				
+				while (endP == kalah2) {
+					int[] pos = generatePossibleMoves(tempBoard,true);
+					
+					for (int j : pos) {
+						int[] ttBoard = Arrays.copyOf(tempBoard,boardsize);
+						ttBoard = boardMove(ttBoard,j,true);
+						if (ttBoard[kalah2] > tempVal) {
+							tempVal = ttBoard[kalah2];
+							targetMove = j;
+						}
+					}
+					tempBoard = boardMove(tempBoard,targetMove,true);
+				}
+				
                 currValue = minimax(tempBoard, i, depth-1, false, alpha, beta);
                 // bestValue = Math.max(bestValue, currValue);
                 alpha = Math.max(alpha, currValue);
@@ -179,7 +197,25 @@ public class AIhard {
 		else {
             for (int i : generatePossibleMoves(board,false)) {
 				tempBoard = boardMove(tempBoard,movePosition,false);
-                currValue = minimax(tempBoard, i, depth-1, true, alpha, beta);
+				int tempVal = 100;
+				int targetMove = -1;
+				while (endP == kalah1) {
+					int[] pos = generatePossibleMoves(tempBoard,true);
+					// System.out.print("TESTING POSSIBLE MOVES: ");
+					// System.out.println(Arrays.toString(pos));
+				
+					for (int j : pos) {
+						int[] ttBoard = Arrays.copyOf(tempBoard,boardsize);
+						ttBoard = boardMove(ttBoard,j,true);
+						if (ttBoard[kalah1] < tempVal) {
+							tempVal = ttBoard[kalah2];
+							targetMove = j;
+						}
+					}
+					tempBoard = boardMove(tempBoard,targetMove,true);
+				}
+				
+				currValue = minimax(tempBoard, i, depth-1, true, alpha, beta);
                 // bestValue = Math.min(bestValue, currValue);
                 beta = Math.min(beta, currValue);
 				if (beta <= alpha) {
@@ -218,7 +254,7 @@ public class AIhard {
 			mmVal = minimax (bestMoveBoard, m, this.depth, true, alpha, beta);
 			
 			if (this.depth%2 == 1) {
-				if (mmVal > bestValue) {
+				if (mmVal >= bestValue) {
 					bestValue = mmVal;
 					bestMove = m;
 				}
