@@ -26,7 +26,7 @@ public class GameUI extends JPanel implements Runnable {
 	private JButton[] houseOptions;
 	private JButton[] seedOptions;
 	private JButton random, begin, playerVsPlayer, easyMode, mediumMode, hardMode;
-    private JButton newGame,selectionMenu,about,quit, playAgain returnToGame;
+    private JButton newGame,selectionMenu,about,quit, playAgain, returnToGame;
     private JLabel playerTurn;
     private JLabel houses, seeds, mode, winner;
     private mancalaClickableHouse[] clickableHouses;
@@ -44,7 +44,7 @@ public class GameUI extends JPanel implements Runnable {
 		playMode = 0;
 		turn = "p1";
 		window = new JFrame("Mancala");
-	    	createAbout()
+	    	createAbout();
     }
     
 	private ActionListener gameActions = new ActionListener()
@@ -315,7 +315,7 @@ public class GameUI extends JPanel implements Runnable {
 		c.gridx = 2;
 		about = new JButton("About");
 		gameBoard.add(about, c);
-		newGame.addActionListener(gameActions);
+		about.addActionListener(gameActions);
 		
 		if(numHouses % 2 == 0) {
 			c.gridx = numHouses / 2;
