@@ -32,11 +32,13 @@ public class AImedium {
 				}
 			}
 			else {
+				int numPasses = (numSeeds + position) / (boardsize-1);
 				for (int i = position+1; i <= kalah2-1; ++i) {
 					tempBoard[i] += 1;
 				}
 				numSeeds = numSeeds - (kalah2 - 1 - position);
 				int numLoops = numSeeds / (boardsize - 1);
+				endP = endP + numPasses;
 				while (numLoops > 0) {
 					for (int i = 0; i<= kalah2-1; ++i) {
 						tempBoard[i] += 1;
@@ -55,11 +57,13 @@ public class AImedium {
 				}
 			}
 			else {
+				int numPasses = (numSeeds + position) / (boardsize-1);
 				for (int i = position+1; i<= kalah2; ++i) {
 					tempBoard[i] += 1;
 				}
 				numSeeds = numSeeds - (kalah2-position);
 				int numLoops = numSeeds/(boardsize-1);
+				endP = endP + numPasses;
 				while (numLoops > 0) {
 					for (int i = 0; i<= kalah1-1; ++i) {
 						tempBoard[i] += 1;
@@ -184,6 +188,10 @@ public class AImedium {
 							targetMove = j;
 						}
 					}
+					// System.out.println("The target move is: " + targetMove);
+					if (targetMove == -1) {
+						break;
+					}
 					if (targetMove != -1) {
 						tempBoard = boardMove(tempBoard,targetMove,true);
 					}
@@ -215,6 +223,10 @@ public class AImedium {
 							tempVal = ttBoard[kalah2];
 							targetMove = j;
 						}
+					}
+					// System.out.println("The target move is: " + targetMove);
+					if (targetMove == -1) {
+						break;
 					}
 					if (targetMove != -1) {
 						tempBoard = boardMove(tempBoard,targetMove,true);
