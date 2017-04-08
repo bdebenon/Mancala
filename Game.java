@@ -300,20 +300,24 @@ public class Game implements Runnable {
 	public void move (int position) throws InterruptedException {
 		if (isPositionValid(position)){
 			int numSeeds = board[position];
+			board[position] = 0;
 			int endPosition = (position + numSeeds) % boardSize;
 			if (turn == "p1"){
 				if (numSeeds + position <= (kalahPosition2 - 1)){
 					disperseSeeds(position+1,position+numSeeds);
 				}
 				else {
+					int numPasses = (numSeeds + position) / (boardSize-1);
 					disperseSeeds(position+1,kalahPosition2-1);
 					numSeeds = numSeeds - (kalahPosition2 - 1 - position);
 					int numLoops = numSeeds / (boardSize - 1);
+					endPosition = endPosition + numPasses;
 					while (numLoops > 0) {
 						disperseSeeds(0,kalahPosition2-1);
 						--numLoops;
+						numSeeds -= kalahPosition2;
 					}
-					disperseSeeds(0,numSeeds % (boardSize-1) - 1);
+					disperseSeeds(0,numSeeds - 1);
 				}
 			}
 			else {
@@ -321,9 +325,11 @@ public class Game implements Runnable {
 					disperseSeeds(position+1,position+numSeeds);
 				}
 				else {
+					int numPasses = (numSeeds + position - NUMHOUSES - 1) / (boardSize - 1);
 					disperseSeeds(position+1,kalahPosition2);
 					numSeeds = numSeeds - (kalahPosition2-position);
 					int numLoops = numSeeds/(boardSize-1);
+					endPosition = endPosition + numPasses;
 					while (numLoops > 0) {
 						disperseSeeds(0,kalahPosition1-1);
 						disperseSeeds(kalahPosition1+1,kalahPosition2);
@@ -339,7 +345,6 @@ public class Game implements Runnable {
 					}
 				}
 			}
-			board[position] = 0;
 			claimSeeds(endPosition);
 			/********* FOR DEBUGGING ***********/
 			//for (int i = 0; i < boardSize; ++i) {
