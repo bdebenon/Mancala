@@ -17,16 +17,16 @@ public class GameUI extends JPanel implements Runnable {
 	private int playMode;
 	private int x, y; 
 	static private String turn;
-	final private JFrame window;
+	final private JFrame window, winnerScreen;
 	private JPanel welcome;
 	private boardJPanel gameBoard;
 	private JButton[] buttons;
 	private JButton[] houseOptions;
 	private JButton[] seedOptions;
 	private JButton random, begin, playerVsPlayer, easyMode, mediumMode, hardMode;
-    private JButton newGame,selectionMenu,options,quit;
+    private JButton newGame,selectionMenu,about,quit, playAgain;
     private JLabel playerTurn;
-    private JLabel houses, seeds, mode;
+    private JLabel houses, seeds, mode, winner;
     private mancalaClickableHouse[] clickableHouses;
     private int houseClicked;
     private final BlockingQueue<String> informationQueueIn;
@@ -71,9 +71,9 @@ public class GameUI extends JPanel implements Runnable {
 					window.validate();
 					informationQueueOut.put("SELECTION");
 	            }
-	            else if (ae.getSource() == options) {
+	            else if (ae.getSource() == about) {
 	            	//TODO
-	            	informationQueueOut.put("OPTIONS");
+	            	informationQueueOut.put("ABOUT");
 	            }
 	            else if (ae.getSource() == quit) {
 	            	informationQueueOut.put("EXIT");
@@ -139,6 +139,30 @@ public class GameUI extends JPanel implements Runnable {
 			}
 		}
 	};
+	
+	private ActionListener winnerListener = new ActionListener()
+	{
+		@Override
+	    public void actionPerformed(ActionEvent ae) {
+		try {
+			if (ae.getSource() == playAgain) {
+				//window.remove(winnerScreen);
+				restart();
+			}
+		} catch (IOException | InterruptedException e1) {
+		e1.printStackTrace();
+		}
+		}
+	};
+	void restart() throws InterruptedException, IOException {
+		window.remove(winnerScreen);
+
+		createGameBoard();
+		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds;
+		informationQueueOut.put(move);
+		window.add(gameBoard);
+		window.validate();
+	}	
 	void begin() throws InterruptedException, IOException {
 		window.remove(welcome);
 		createGameBoard();
@@ -268,8 +292,8 @@ public class GameUI extends JPanel implements Runnable {
 		newGame.addActionListener(gameActions);
 		
 		c.gridx = 2;
-		options = new JButton("Options");
-		gameBoard.add(options, c);
+		about = new JButton("About");
+		gameBoard.add(about, c);
 		newGame.addActionListener(gameActions);
 		
 		if(numHouses % 2 == 0) {
@@ -451,8 +475,36 @@ public class GameUI extends JPanel implements Runnable {
 		welcome.add(begin, c);
 	}
 	
-	void createWinScreen(int winStatus) {
+	public void createWinScreen(int winStatus) throws IOException {
 		//0 -> Win, 1 -> LOSE, 2 -> TIE
+		JLabel winner = new JLabel();
+		window.setSize(x, y);
+		winnerScreen = new boardJPanel(x, y);
+		if (winStatus == 0) {
+			winner.setText("You win!");
+		}
+		else if (winStatus == 1) {
+			winner.setText("You lose!");
+		}
+		else if (winStatus == 2) {
+			winner.setText("It's a tie!");
+		}
+		
+		winner.setFont(new Font("Serif", Font.PLAIN, 50));
+		playAgain = new JButton("Play Again");
+		playAgain.addActionListener(winnerListener);
+		
+		winnerScreen.setLayout(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.anchor = GridBagConstraints.CENTER;
+		
+		c.gridy = 2;
+		winnerScreen.add(winner, c);
+		
+		c.gridy = 4;
+		winnerScreen.add(playAgain, c);
+		
 		System.out.println("Winner Status: " + winStatus);
 	}
 	
@@ -554,12 +606,18 @@ public class GameUI extends JPanel implements Runnable {
 						break;
 					case "WINNER":
 						createWinScreen(0);
+						window.add(winnerScreen);
+						window.validate();
 						break;
 					case "LOSER":
 						createWinScreen(1);
+						window.add(winnerScreen);
+						window.validate();
 						break;
 					case "TIE":
 						createWinScreen(2);
+						window.add(winnerScreen);
+						window.validate();
 						break;
 					case "OK":
 						//TODO

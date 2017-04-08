@@ -201,9 +201,9 @@ public class Game implements Runnable {
 			}
 			else {
 				if(result.equals("p1")) {
-				boardQueueOut.put("WINNER");	
+				boardQueueOut.put("ACK_WINNER");	
 				} else {
-				boardQueueOut.put("LOSER");
+				boardQueueOut.put("ACK_LOSER");
 				}
 				//System.out.println("The winner is " + result);
 				//System.out.println("Game Over");
