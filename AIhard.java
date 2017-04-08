@@ -136,11 +136,11 @@ public class AIhard {
 		int [] tempBoard = Arrays.copyOf(board,boardsize);
 		
 		if (isComputer) {
-			heuristicPoint = tempBoard[6] - tempBoard[13];
+			heuristicPoint = tempBoard[kalah1] - tempBoard[kalah2];
 		
 		}
 		else {
-			heuristicPoint = tempBoard[13] - tempBoard[6];
+			heuristicPoint = tempBoard[kalah2] - tempBoard[kalah1];
 		}
 		return heuristicPoint;
 	}
