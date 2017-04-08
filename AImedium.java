@@ -173,6 +173,8 @@ public class AImedium {
 				
 				while (endP == kalah2) {
 					int[] pos = generatePossibleMoves(tempBoard,true);
+					// System.out.print("TESTING POSSIBLE MOVES: ");
+					// System.out.println(Arrays.toString(pos));
 					
 					for (int j : pos) {
 						int[] ttBoard = Arrays.copyOf(tempBoard,boardsize);
@@ -182,7 +184,9 @@ public class AImedium {
 							targetMove = j;
 						}
 					}
-					tempBoard = boardMove(tempBoard,targetMove,true);
+					if (targetMove != -1) {
+						tempBoard = boardMove(tempBoard,targetMove,true);
+					}
 				}
 				
                 currValue = minimax(tempBoard, i, depth-1, false, alpha, beta);
@@ -212,7 +216,9 @@ public class AImedium {
 							targetMove = j;
 						}
 					}
-					tempBoard = boardMove(tempBoard,targetMove,true);
+					if (targetMove != -1) {
+						tempBoard = boardMove(tempBoard,targetMove,true);
+					}
 				}
 				
 				currValue = minimax(tempBoard, i, depth-1, true, alpha, beta);
@@ -254,7 +260,7 @@ public class AImedium {
 			mmVal = minimax (bestMoveBoard, m, this.depth, true, alpha, beta);
 			
 			if (this.depth%2 == 1) {
-				if (mmVal >= bestValue) {
+				if (mmVal > bestValue) {
 					bestValue = mmVal;
 					bestMove = m;
 				}
