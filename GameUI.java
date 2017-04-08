@@ -3,6 +3,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 
@@ -17,14 +19,14 @@ public class GameUI extends JPanel implements Runnable {
 	private int playMode;
 	private int x, y; 
 	static private String turn;
-	final private JFrame window, winnerScreen;
-	private JPanel welcome;
+	final private JFrame window;
+	private JPanel welcome, winnerScreen, aboutPanel;
 	private boardJPanel gameBoard;
 	private JButton[] buttons;
 	private JButton[] houseOptions;
 	private JButton[] seedOptions;
 	private JButton random, begin, playerVsPlayer, easyMode, mediumMode, hardMode;
-    private JButton newGame,selectionMenu,about,quit, playAgain;
+    private JButton newGame,selectionMenu,about,quit, playAgain returnToGame;
     private JLabel playerTurn;
     private JLabel houses, seeds, mode, winner;
     private mancalaClickableHouse[] clickableHouses;
@@ -42,6 +44,7 @@ public class GameUI extends JPanel implements Runnable {
 		playMode = 0;
 		turn = "p1";
 		window = new JFrame("Mancala");
+	    	createAbout()
     }
     
 	private ActionListener gameActions = new ActionListener()
@@ -72,7 +75,10 @@ public class GameUI extends JPanel implements Runnable {
 					informationQueueOut.put("SELECTION");
 	            }
 	            else if (ae.getSource() == about) {
-	            	//TODO
+	            	window.remove(gameBoard);
+			window.setContentPane(aboutPanel);
+			window.invalidate();
+			window.validate();
 	            	informationQueueOut.put("ABOUT");
 	            }
 	            else if (ae.getSource() == quit) {
@@ -154,6 +160,21 @@ public class GameUI extends JPanel implements Runnable {
 		}
 		}
 	};
+	
+	private ActionListener aboutListener = new ActionListener()
+	{
+		@Override
+	    public void actionPerformed(ActionEvent ae) {
+			if (ae.getSource() == returnToGame) {
+				System.out.println("remove about panel");
+				//window.remove(aboutPanel);
+				window.setContentPane(gameBoard);
+				window.invalidate();
+				window.validate();
+			}
+		}
+	};
+
 	void restart() throws InterruptedException, IOException {
 		window.remove(winnerScreen);
 
@@ -506,6 +527,35 @@ public class GameUI extends JPanel implements Runnable {
 		winnerScreen.add(playAgain, c);
 		
 		System.out.println("Winner Status: " + winStatus);
+	}
+	
+	void createAbout() throws IOException {
+		window.setSize(x, y);
+		aboutPanel = new boardJPanel(x, y);
+		returnToGame = new JButton("Return to Game");
+		aboutPanel.setLayout(new GridBagLayout());
+		
+		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.anchor = GridBagConstraints.CENTER;
+		c.gridy = 1;
+		
+		JLabel abt = new JLabel("About Kalah");
+		abt.setFont(new Font("Serif", Font.PLAIN, 50));
+		aboutPanel.add(abt, c);
+
+		c.gridy++;
+		BufferedReader in = new BufferedReader(new FileReader("about.txt"));
+		String line;
+		
+		while ((line = in.readLine()) != null) {
+			aboutPanel.add(new JLabel("<html>" + line + "</html>"), c);
+			c.gridy++;
+		}
+		in.close();
+		
+		returnToGame.addActionListener(aboutListener);
+		aboutPanel.add(returnToGame, c);	
 	}
 	
 	String getText(int playerMode) {
