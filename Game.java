@@ -1,4 +1,5 @@
 import java.util.concurrent.BlockingQueue;
+import java.util.Random;
 
 		
 public class Game implements Runnable {
@@ -17,6 +18,7 @@ public class Game implements Runnable {
 	private int NUMHOUSES;
 	private int kalahPosition1 = 0;
 	private int kalahPosition2 = 0;
+	private boolean isRandom;
 	private static AIeasy ai1;
 	private static AImedium ai2;
 	private static AIhard ai3;
@@ -82,7 +84,7 @@ public class Game implements Runnable {
 						boardQueueOut.put("ACK_WELCOME");
 						break;
 					case "GAMEINFO":
-						newGame(Integer.parseInt(incoming[2]), Integer.parseInt(incoming[3]), Integer.parseInt(incoming[4]));
+						newGame(Integer.parseInt(incoming[2]), Integer.parseInt(incoming[3]), Integer.parseInt(incoming[4]), Integer.parseInt(incoming[5]));
 						boardQueueOut.put(createUpdatePacket());
 						break;
 					}
@@ -114,17 +116,37 @@ public class Game implements Runnable {
 		NUMSEEDS = numSeeds;
 		NUMHOUSES = numHouses;
 		boardSize = NUMHOUSES * 2 + 2; 
+		if (isRand == 0) {
+			isRandom = false;
+		}
+		else {
+			isRandom = true;
+		}
 		board = new int[boardSize];
 		kalahPosition1 = NUMHOUSES;
 		kalahPosition2 = boardSize - 1;
 		System.out.println("Play Mode: " + playMode);
-		for (int i = 0; i < boardSize; ++i) {
-			if (i== kalahPosition1 || i == kalahPosition2){
-				board[i] = 0;
+		if (!isRandom) {
+			for (int i = 0; i < boardSize; ++i) {
+				if (i== kalahPosition1 || i == kalahPosition2){
+					board[i] = 0;
+				}
+				else {
+					board[i] = NUMSEEDS;
+				}
 			}
-			else {
-				board[i] = NUMSEEDS;
+		}
+		else {
+			Random rand = new Random();
+			int seedsLeft = NUMSEEDS * NUMHOUSES;
+			for (int i = 0; i < NUMHOUSES; i++) {
+				int current = rand.nextInt(seedsLeft);
+				board[i] = current;
+				board[i+NUMHOUSES+1] = current;
+				seedsLeft -= current;
 			}
+			board[kalahPosition1] = 0;
+			board[kalahPosition2] = 0;
 		}
 		MODE = playMode;
 		if (MODE == 1) {
