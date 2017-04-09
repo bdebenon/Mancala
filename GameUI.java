@@ -184,6 +184,12 @@ public class GameUI extends JPanel implements Runnable {
 		window.remove(winnerScreen);
 
 		createGameBoard();
+		String booleanStatus;
+		if(isRandom) {
+			booleanStatus = "1";
+		} else {
+			booleanStatus = "0";
+		}
 		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds + "_" + booleanStatus;
 		informationQueueOut.put(move);
 		window.add(gameBoard);
@@ -192,6 +198,12 @@ public class GameUI extends JPanel implements Runnable {
 	void begin() throws InterruptedException, IOException {
 		window.remove(welcome);
 		createGameBoard();
+		String booleanStatus;
+		if(isRandom) {
+			booleanStatus = "1";
+		} else {
+			booleanStatus = "0";
+		}
 		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds + "_" + booleanStatus;
 		informationQueueOut.put(move);
 		window.add(gameBoard);
@@ -199,6 +211,12 @@ public class GameUI extends JPanel implements Runnable {
 	}
 	
 	void newGame() throws InterruptedException {
+		String booleanStatus;
+		if(isRandom) {
+			booleanStatus = "1";
+		} else {
+			booleanStatus = "0";
+		}
 		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds + "_" + booleanStatus;
 		informationQueueOut.put(move);
 	}
