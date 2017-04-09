@@ -172,7 +172,7 @@ public class GameUI extends JPanel implements Runnable {
 	    public void actionPerformed(ActionEvent ae) {
 			if (ae.getSource() == returnToGame) {
 				System.out.println("remove about panel");
-				//window.remove(aboutPanel);
+				window.remove(aboutPanel);
 				window.setContentPane(gameBoard);
 				window.invalidate();
 				window.validate();
@@ -192,7 +192,8 @@ public class GameUI extends JPanel implements Runnable {
 		}
 		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds + "_" + booleanStatus;
 		informationQueueOut.put(move);
-		window.add(gameBoard);
+		window.setContentPane(gameBoard);
+		window.invalidate();
 		window.validate();
 	}	
 	void begin() throws InterruptedException, IOException {
@@ -206,7 +207,8 @@ public class GameUI extends JPanel implements Runnable {
 		}
 		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds + "_" + booleanStatus;
 		informationQueueOut.put(move);
-		window.add(gameBoard);
+		window.setContentPane(gameBoard);
+		window.invalidate();
 		window.validate();
 	}
 	
@@ -679,18 +681,24 @@ public class GameUI extends JPanel implements Runnable {
 						break;
 					case "WINNER":
 						createWinScreen(0);
-						window.add(winnerScreen);
-						window.validate();
+						window.remove(gameBoard);
+		            			window.setContentPane(winnerScreen);
+		            			window.invalidate();
+		            			window.validate();
 						break;
 					case "LOSER":
 						createWinScreen(1);
-						window.add(winnerScreen);
-						window.validate();
+						window.remove(gameBoard);
+		            			window.setContentPane(winnerScreen);
+		            			window.invalidate();
+		            			window.validate();
 						break;
 					case "TIE":
 						createWinScreen(2);
-						window.add(winnerScreen);
-						window.validate();
+						window.remove(gameBoard);
+		            			window.setContentPane(winnerScreen);
+		            			window.invalidate();
+		            			window.validate();
 						break;
 					case "OK":
 						//TODO
