@@ -31,6 +31,7 @@ public class GameUI extends JPanel implements Runnable {
     private JLabel houses, seeds, mode, winner;
     private mancalaClickableHouse[] clickableHouses;
     private int houseClicked;
+	private boolean isRandom;
     private final BlockingQueue<String> informationQueueIn;
     private final BlockingQueue<String> informationQueueOut;
     
@@ -116,8 +117,12 @@ public class GameUI extends JPanel implements Runnable {
 				}
 		        if (ae.getSource() == random)
 		        {
-		        	Random rand = new Random();
-		        	numSeeds = rand.nextInt(9) + 1;
+		        	if (isRandom == false) {
+		        		isRandom = true;
+		        	}
+		        	else {
+		        		isRandom = false;
+		        	}
 		        }
 		        else if (ae.getSource() == begin)
 		        {
@@ -179,7 +184,7 @@ public class GameUI extends JPanel implements Runnable {
 		window.remove(winnerScreen);
 
 		createGameBoard();
-		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds;
+		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds + "_" + booleanStatus;
 		informationQueueOut.put(move);
 		window.add(gameBoard);
 		window.validate();
@@ -187,14 +192,14 @@ public class GameUI extends JPanel implements Runnable {
 	void begin() throws InterruptedException, IOException {
 		window.remove(welcome);
 		createGameBoard();
-		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds;
+		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds + "_" + booleanStatus;
 		informationQueueOut.put(move);
 		window.add(gameBoard);
 		window.validate();
 	}
 	
 	void newGame() throws InterruptedException {
-		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds;
+		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds + "_" + booleanStatus;
 		informationQueueOut.put(move);
 	}
 	
