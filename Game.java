@@ -1,5 +1,7 @@
 import java.util.concurrent.BlockingQueue;
+import java.util.Arrays;
 import java.util.Random;
+import java.util.Scanner;
 
 		
 public class Game implements Runnable {
@@ -22,9 +24,9 @@ public class Game implements Runnable {
 	private static AIeasy ai1;
 	private static AImedium ai2;
 	private static AIhard ai3;
-	
-	// private boolean Pie = false;
-	// private int endP = 0;
+	private boolean Pie = false;
+	private boolean firstTurnCompleted = false;
+	private boolean pieRuleHandled = false;
 	
 	private final BlockingQueue<String> boardQueueIn;
 	private final BlockingQueue<String> boardQueueOut;
@@ -112,7 +114,7 @@ public class Game implements Runnable {
 	}
 	
 	// initialize the game
-	public void newGame (int playMode, int numHouses, int numSeeds) {
+	public void newGame (int playMode, int numHouses, int numSeeds, int isRand) {
 		NUMSEEDS = numSeeds;
 		NUMHOUSES = numHouses;
 		boardSize = NUMHOUSES * 2 + 2; 
@@ -180,37 +182,40 @@ public class Game implements Runnable {
 		return board;
 	}
 	
-	// public boolean getPie () {
-		// return Pie;
-	// }
+	/*********** HELPER FUNCTIONS FOR PIE RULE: Part 2/4 **************/
+	public boolean getPie () {
+		return Pie;
+	}
 	
-	// public void setPie (boolean pie) {
-		// Pie = pie;
-	// }
+	public void setPie (boolean pie) {
+		Pie = pie;
+	}
 	
-	// public void setEndP (int end) {
-		// endP = end;
-	// }
+	public void setEndP (int end) {
+		endP = end;
+	}
 	
-	// public void pieRule () {
-		// System.out.println("You want to switch position with player 1. True or false");
-		// Scanner sc = new Scanner(System.in);
-		// boolean isPie = Boolean.parseBoolean(sc.nextLine());
-		// setPie(isPie);
-		// if (Pie) {
-			// int [] tempBoard = Arrays.copyOf(board,boardSize);
-			// for (int i = 0; i < NUMHOUSES; ++i) {
-				// board[i] = tempBoard[kalahPosition1+1+i];
-				// board[kalahPosition1+1+i] = tempBoard[i];
-			// }
-			// board[kalahPosition1] = tempBoard[kalahPosition2];
-			// board[kalahPosition2] = tempBoard[kalahPosition1];
-			// turn = "p1";
-			// System.out.println("Board position has been switched");
-			// System.out.println("Player 2 has Player 1 board side now");
-			// System.out.println("Player 1 continues to play with the new board");
-		// }
-	// }
+	public void pieRule () {
+		System.out.println("You want to switch position with player 1. True or false");
+		Scanner sc = new Scanner(System.in);
+		boolean isPie = Boolean.parseBoolean(sc.nextLine());
+		setPie(isPie);
+		if (Pie) {
+			int [] tempBoard = Arrays.copyOf(board,boardSize);
+			for (int i = 0; i < NUMHOUSES; ++i) {
+				board[i] = tempBoard[kalahPosition1+1+i];
+				board[kalahPosition1+1+i] = tempBoard[i];
+			}
+			board[kalahPosition1] = tempBoard[kalahPosition2];
+			board[kalahPosition2] = tempBoard[kalahPosition1];
+			turn = "p1";
+			System.out.println("Board position has been switched");
+			System.out.println("Player 2 has Player 1 board side now");
+			System.out.println("Player 1 continues to play with the new board");
+		}
+	}
+	
+	/*********** END OF HELPER FUNCTIONS FOR PIE RULE **************/
 	
 	public boolean isPositionValid (int position) {
 		if (turn == "p1"){
@@ -329,6 +334,7 @@ public class Game implements Runnable {
 		if (MODE == 0){
 			if (turn == "p1" && position != kalahPosition1){
 				turn = "p2";
+				firstTurnCompleted = true;
 			}
 			else if (turn == "p2" && position != kalahPosition2) {
 				turn = "p1";
@@ -338,6 +344,7 @@ public class Game implements Runnable {
 		else { // AI mode 
 			if (position != kalahPosition1) {
 				turn = "p2";
+				firstTurnCompleted = true;
 				if (MODE == 1) {
 					ai1.AImove(this,board);
 				}
