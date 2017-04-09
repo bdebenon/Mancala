@@ -1,3 +1,13 @@
+import java.util.*;
+
+/******* AI - easy level ********/
+/*********************************
+
+A simple way to get started on human - AI mode
+Next move for AI is randomly decided 
+
+*********************************/
+
 public class AIeasy {
 	private Game game;
 	public void AImove (Game game, int [] board) {
@@ -12,6 +22,7 @@ public class AIeasy {
 		do {
 			if (!game.isEmpty()) {
 				int house;
+				// randomly choose a house. If the house is invalid (empty), chose a different house.
 				do {
 					house = (int) (Math.random() * NUMHOUSES + kalah1 + 1);
 				} while (game.boardInfo(house) == 0); 
@@ -49,6 +60,8 @@ public class AIeasy {
 			else {
 				break;
 			}
+		// if the end position of AI move ends in its kalah (kalah2)
+		// AI gets to move again
 		} while (endPosition == kalah2);
 	}
 }

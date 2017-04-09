@@ -1,5 +1,14 @@
 import java.util.*;
 
+/******* AI - medium level ********/
+/*********************************
+
+Implement AI using the minimax method
+The level of depth is 2
+AI decides next move after optimizing 1 opposite player's move
+
+*********************************/
+
 public class AImedium {
 	private Game game;
 	private int NUMHOUSES;
@@ -11,6 +20,7 @@ public class AImedium {
 	private int depth = 2; 
 	private int endP;
 	
+	// CONSTRUCTOR
 	public AImedium (Game game) {
 		this.game = game;
 		NUMHOUSES = game.getNumHouses();
@@ -20,6 +30,11 @@ public class AImedium {
 		kalah2 = boardsize - 1;
 		endP = -1;
 	}
+	
+	
+	/** this function replicates the move function in Game.java
+	it is used to calculate the board state after AI and human moves 
+	it moves around the board follows kalah rule and claim any appropriate seeds  ***/
 	
 	private int[] boardMove (int[] board, int position, boolean isComputer) {
 		int[] tempBoard = Arrays.copyOf(board,boardsize);
@@ -108,6 +123,7 @@ public class AImedium {
 	
 	
 	/******* GENERATE POSSIBLE MOVES ***************/
+	// find allowed moves at a given level
 	private int[] generatePossibleMoves (int[] board, boolean isComputer) {
 		List<Integer> pMoves = new ArrayList<Integer>();
 		if (!isComputer) {  
@@ -135,6 +151,7 @@ public class AImedium {
 	
 	
 	/******* EVALUATE MOVES ***************/
+	// evaluate the move by finding its heuristic value 
 	private int evaluateMove (int[] board, boolean isComputer) {
 		int heuristicPoint = 0;
 		int [] tempBoard = Arrays.copyOf(board,boardsize);
@@ -152,6 +169,11 @@ public class AImedium {
 	
 	
 	/******* MINIMAX RECURSION WITH PRUNNING ***************/
+	// Iterate through all possible moves that AI and human can take at depth level 2 
+	// Calculate the heuristic value for each move 
+	// Goal is to maximize AI's move, minimze human's move
+	// Alpha - beta is used to reduced the amount of workload 
+	
 	private int minimax (int[] board, int movePosition, int depth, boolean isComputer, int alpha, int beta) {
 		int bestValue = 0;
 		int currValue;
@@ -177,9 +199,6 @@ public class AImedium {
 				
 				while (endP == kalah2) {
 					int[] pos = generatePossibleMoves(tempBoard,true);
-					// System.out.print("TESTING POSSIBLE MOVES: ");
-					// System.out.println(Arrays.toString(pos));
-					
 					for (int j : pos) {
 						int[] ttBoard = Arrays.copyOf(tempBoard,boardsize);
 						ttBoard = boardMove(ttBoard,j,true);
@@ -188,7 +207,6 @@ public class AImedium {
 							targetMove = j;
 						}
 					}
-					// System.out.println("The target move is: " + targetMove);
 					if (targetMove == -1) {
 						break;
 					}
@@ -196,9 +214,7 @@ public class AImedium {
 						tempBoard = boardMove(tempBoard,targetMove,true);
 					}
 				}
-				
                 currValue = minimax(tempBoard, i, depth-1, false, alpha, beta);
-                // bestValue = Math.max(bestValue, currValue);
                 alpha = Math.max(alpha, currValue);
 				if (beta <= alpha) {
 					break;
@@ -213,9 +229,6 @@ public class AImedium {
 				int targetMove = -1;
 				while (endP == kalah1) {
 					int[] pos = generatePossibleMoves(tempBoard,true);
-					// System.out.print("TESTING POSSIBLE MOVES: ");
-					// System.out.println(Arrays.toString(pos));
-				
 					for (int j : pos) {
 						int[] ttBoard = Arrays.copyOf(tempBoard,boardsize);
 						ttBoard = boardMove(ttBoard,j,true);
@@ -224,7 +237,6 @@ public class AImedium {
 							targetMove = j;
 						}
 					}
-					// System.out.println("The target move is: " + targetMove);
 					if (targetMove == -1) {
 						break;
 					}
@@ -234,7 +246,6 @@ public class AImedium {
 				}
 				
 				currValue = minimax(tempBoard, i, depth-1, true, alpha, beta);
-                // bestValue = Math.min(bestValue, currValue);
                 beta = Math.min(beta, currValue);
 				if (beta <= alpha) {
 					break;
@@ -242,11 +253,18 @@ public class AImedium {
             }
 			return beta;
 		}
-		// return bestValue;
 	}
 	/******* DONE ***************/
 	
 	
+	
+	
+	/********** GENERATE BEST MOVE ***************/
+	// Generate the best possible move for AI 
+	// First, test to see whether there is a move that is a winning move
+	// Winning move = move that make kalah2 has more than half of the amount of total seeds
+	// If there is, perform the move 
+	// If there is not, run minimax to find move
 	
 	private int generateBestMove (int[] board) {
 		int bestMove = -1;
@@ -286,7 +304,15 @@ public class AImedium {
 		}
 		return bestMove;
 	}
+	/********** DONE ***************/
 	
+	
+	
+	/********** MAIN FUNCTIOn ***************/
+	// The main public function. Other files would only need to call this function to run AI medium 
+	// This function generate the best move for AI at depth level 2 by calling other helper functions
+	// After the move is chosen, the function performs the move and passes the access back to
+	// the main program
 	public void AImove (int [] board) {
 		int endPosition;
 		

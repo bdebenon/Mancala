@@ -20,6 +20,10 @@ public class Game implements Runnable {
 	private static AIeasy ai1;
 	private static AImedium ai2;
 	private static AIhard ai3;
+	
+	// private boolean Pie = false;
+	// private int endP = 0;
+	
 	private final BlockingQueue<String> boardQueueIn;
 	private final BlockingQueue<String> boardQueueOut;
 	
@@ -109,13 +113,11 @@ public class Game implements Runnable {
 	public void newGame (int playMode, int numHouses, int numSeeds) {
 		NUMSEEDS = numSeeds;
 		NUMHOUSES = numHouses;
-		// boardSize = number of Houses * 2 (for 2 players) + 2 kalahs
 		boardSize = NUMHOUSES * 2 + 2; 
 		board = new int[boardSize];
 		kalahPosition1 = NUMHOUSES;
 		kalahPosition2 = boardSize - 1;
 		System.out.println("Play Mode: " + playMode);
-		//System.out.println("seeds " + NUMSEEDS + ". Houses: " + NUMHOUSES + ". KalahPosition2: " + kalahPosition2);
 		for (int i = 0; i < boardSize; ++i) {
 			if (i== kalahPosition1 || i == kalahPosition2){
 				board[i] = 0;
@@ -155,6 +157,38 @@ public class Game implements Runnable {
 	public int[] getBoard () {
 		return board;
 	}
+	
+	// public boolean getPie () {
+		// return Pie;
+	// }
+	
+	// public void setPie (boolean pie) {
+		// Pie = pie;
+	// }
+	
+	// public void setEndP (int end) {
+		// endP = end;
+	// }
+	
+	// public void pieRule () {
+		// System.out.println("You want to switch position with player 1. True or false");
+		// Scanner sc = new Scanner(System.in);
+		// boolean isPie = Boolean.parseBoolean(sc.nextLine());
+		// setPie(isPie);
+		// if (Pie) {
+			// int [] tempBoard = Arrays.copyOf(board,boardSize);
+			// for (int i = 0; i < NUMHOUSES; ++i) {
+				// board[i] = tempBoard[kalahPosition1+1+i];
+				// board[kalahPosition1+1+i] = tempBoard[i];
+			// }
+			// board[kalahPosition1] = tempBoard[kalahPosition2];
+			// board[kalahPosition2] = tempBoard[kalahPosition1];
+			// turn = "p1";
+			// System.out.println("Board position has been switched");
+			// System.out.println("Player 2 has Player 1 board side now");
+			// System.out.println("Player 1 continues to play with the new board");
+		// }
+	// }
 	
 	public boolean isPositionValid (int position) {
 		if (turn == "p1"){
@@ -346,11 +380,6 @@ public class Game implements Runnable {
 				}
 			}
 			claimSeeds(endPosition);
-			/********* FOR DEBUGGING ***********/
-			//for (int i = 0; i < boardSize; ++i) {
-			//	System.out.println("number of seeds in house " + i + " is: " + board[i]);
-			//}
-			/********* FOR DEBUGGING ***********/
 			checkTurn(endPosition);
 		}
 		else {
