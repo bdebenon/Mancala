@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.concurrent.BlockingQueue;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class GameUI extends JPanel implements Runnable {
 	/**Creates and manages the GUI side of Game.java
@@ -47,7 +49,8 @@ public class GameUI extends JPanel implements Runnable {
 		playMode = 0;
 		turn = "p1";
 		window = new JFrame("Mancala");
-	    	createAbout();
+	    createAbout();
+	    timer = new Timer();
     }
     
 	private ActionListener gameActions = new ActionListener()
@@ -65,6 +68,7 @@ public class GameUI extends JPanel implements Runnable {
 	                		houseClicked = i + 1;
 	                    String move = "MOVE_1_" + houseClicked;
 						informationQueueOut.put(move);
+						runTimer();
 	                }
 	    		}
 	            if (ae.getSource() == newGame) {
@@ -636,7 +640,7 @@ public class GameUI extends JPanel implements Runnable {
 			return "No";
 	}
 	
-	/*private void runTimer() throws IOException{
+	private void runTimer() throws IOException{
 		timer.cancel();
 		timer = new Timer();
 	
@@ -659,7 +663,7 @@ public class GameUI extends JPanel implements Runnable {
 			
 		}, 10000); // number: timeout value
 		
-	}*/
+	}
 	
 	//Called each time a Welcome Screen Object is clicked
 	void updateWelcome() {
