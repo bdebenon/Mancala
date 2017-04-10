@@ -90,7 +90,7 @@ public class Game implements Runnable {
 				}
 				String [] incoming;
 				String input;
-				if(turn == "p1") 
+				if(turn == "p1" || LOCALGAME == true) 
 					input = boardQueueIn.take();
 				else
 					input = boardQueueIn2.take();
@@ -202,6 +202,7 @@ public class Game implements Runnable {
 		MODE = playMode;
 		if(MODE == 0) {
 			if(LOCALGAME == true) {
+				trueTwoPlayer = true;
 				//TODO
 			} else {
 				System.out.println("Waiting for Player 2 Connection...");

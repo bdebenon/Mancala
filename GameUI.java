@@ -33,6 +33,7 @@ public class GameUI extends JPanel implements Runnable {
     private mancalaClickableHouse[] clickableHouses;
     private int houseClicked;
 	private boolean isRandom;
+	//DETERMINES IF YOU WANT TO PLAY THE GAME WITHOUT A NETWORK OPPONENT
 	private boolean LOCALGAME = false;
 	private boolean isPlayerTwo = false;;
     private final BlockingQueue<String> informationQueueIn;
