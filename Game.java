@@ -152,7 +152,10 @@ public class Game implements Runnable {
 		}
 	}
 	
-	// initialize the game
+	
+	
+	/********************CONSTRUCTOR ********************/
+	// initialize the game with the play mode, number of houses, number of seeds, is randomized or not, and is local or not
 	public void newGame (int playMode, int numHouses, int numSeeds, int isRand, int isLOCAL) throws IOException, InterruptedException {
 		NUMSEEDS = numSeeds;
 		NUMHOUSES = numHouses;
@@ -227,7 +230,11 @@ public class Game implements Runnable {
 		}
 		turn = "p1";
 	}
+	/******************** DONE ********************/
 	
+	
+	
+	/******************* HELPER GET/SET FUNCTIONS **********/
 	public int boardInfo (int houseNum) {
 		if (houseNum > (boardSize - 1) || houseNum < 0) {
 			return -1;
@@ -247,7 +254,6 @@ public class Game implements Runnable {
 		return board;
 	}
 	
-	/*********** HELPER FUNCTIONS FOR PIE RULE: Part 2/4 **************/
 	public boolean getPie () {
 		return Pie;
 	}
@@ -270,8 +276,13 @@ public class Game implements Runnable {
 			System.out.println("Player 1 continues to play with the new board");
 	}
 	
-	/*********** END OF HELPER FUNCTIONS FOR PIE RULE **************/
+	/*********** END OF HELPER FUNCTIONS **************/
 	
+	
+	
+	/********** CHECK MOVE VALIDATION ***************/
+	// player 1 can only chooses the bottom row
+	// player 2 can only chooses the top row 
 	public boolean isPositionValid (int position) {
 		if (turn == "p1"){
 			if (position < 0 || position > (kalahPosition1 - 1) || board[position] == 0) {
@@ -291,7 +302,13 @@ public class Game implements Runnable {
 		}
 		return false;
 	}
+	/************* DONE ********************/
 	
+	
+	//********** CHECK AND DECLARE WINNER **********/
+	// if kalah 2 has more seeds than kalah 1 => player 2 wins
+	// if kalah 1 has more seeds than kalah 2 => player 1 wins 
+	// otherwise, it is a tie
 	public String checkWinner () {
 		String winner = "none";
 		if (board[kalahPosition1] > board[kalahPosition2]){
@@ -305,7 +322,12 @@ public class Game implements Runnable {
 		}
 		return winner;
 	}
+	/**************** DONE **********************/
 	
+	
+	
+	/************* Game Over *******************/
+	// Check to see whether the game is over 
 	public boolean isOver () throws InterruptedException {
 		String result = checkWinner();
 		boardQueueOut.put(createUpdatePacket());
@@ -326,8 +348,14 @@ public class Game implements Runnable {
 		}
 		return false;
 	}
+	/**************** DONE **********************/
 	
-	// check if ALL houses in the player's side are empty
+	
+	
+	
+	/**************** EMPTY CHECKING **********************/
+	// check if ALL houses in either board side are empty
+	// this functions help determine whether the game is over or not 
 	public boolean isEmpty () {
 		totalSeed1 = 0;
 		totalSeed2 = 0;
@@ -342,7 +370,11 @@ public class Game implements Runnable {
 		}
 		return false;
 	}
+	/**************** DONE **********************/
 	
+	
+	/**************** LAST MOVE **********************/
+	// if the game is over, the lastMove() function collects the seeds into appropriate kalahs and clean up the board
 	public void lastMove () {
 		if (totalSeed1 == 0) {
 			board[kalahPosition2] += totalSeed2;
@@ -356,7 +388,13 @@ public class Game implements Runnable {
 			}
 		}
 	}
+	/**************** DONE **********************/
 	
+	
+	/**************** CLAIM SEEDS **********************/
+	// if the last seed falls into an empty house in the current player side 
+	// and if the opposite house has seeds 
+	// this function collect seeds in those 2 houses into the current player's kalah 
 	public void claimSeeds (int position) {
 		int oppositePosition = (NUMHOUSES*2) - position;
 		if (turn == "p1" && position >= 0 && position < kalahPosition1 && board[position] == 1 && board[oppositePosition] != 0){
@@ -369,15 +407,22 @@ public class Game implements Runnable {
 			board[position] = 0;
 			board[oppositePosition] = 0;
 		}
-		
 	}
+	/**************** DONE **********************/
 	
+	
+	/**************** DISPERSE SEEDS **********************/
+	// disperse 1 seed into each house from the start position to the end position 
 	public void disperseSeeds (int startPosition, int endPosition) {
 		for (int i = startPosition; i <= endPosition; ++i){
 			board[i] += 1;
 		}
 	}
+	/**************** DONE **********************/
 	
+	
+	/**************** CHECK TURN  **********************/
+	// check to see whose turn is it 
 	public void checkTurn (int position) throws InterruptedException{
 			if (turn == "p1" && position != kalahPosition1){
 				turn = "p2";
@@ -390,7 +435,13 @@ public class Game implements Runnable {
 			if(turn == "p2" && !trueTwoPlayer)
 				boardQueueOut2.put("AITURN");
 	}
+	/**************** DONE **********************/
 	
+	
+	/**************** MOVE FUNCTION **********************/
+	// this function first checks whether a position is valid for the current player 
+	// if it is, it calls disperseSeeds() function to disperse seeds 
+	// then it collects seeds (if any), check turn, and switch player 
 	public void move (int position) throws InterruptedException {
 		if (isPositionValid(position)){
 			int numSeeds = board[position];
@@ -454,6 +505,7 @@ public class Game implements Runnable {
 			boardQueueOut.put("ACK_ILLEGAL");
 		}
 	}
+	/**************** DONE **********************/
 	
 	void findNewConnection() {
 		//TODO
