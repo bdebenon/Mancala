@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 
 /******* AI - hard level ********/
 /*********************************
@@ -9,21 +10,25 @@ AI decides next move after optimizing 2 opposite player's move
 
 *********************************/
 
-public class AIhard {
-	private Game game;
+public class AIhard implements Runnable {
+	
+	private final Game game;
+	private final BlockingQueue<String> boardQueueIn;
+	private final BlockingQueue<String> boardQueueOut;
 	private int NUMHOUSES;
 	private int NUMSEEDS;
 	private int boardsize;
 	private int kalah1;
 	private int kalah2;
+	private int [] board;
 
 	private int depth = 4; 
 	private int endP;
 	
-	
-	// CONSTRUCTOR
-	public AIhard (Game game) {
-		this.game = game;
+	public AIhard (Game _game, BlockingQueue<String> _boardQueueIn, BlockingQueue<String> _boardQueueOut) {
+		game = _game;
+		boardQueueIn = _boardQueueIn;
+		boardQueueOut = _boardQueueOut;
 		NUMHOUSES = game.getNumHouses();
 		NUMSEEDS = game.getNumSeeds();
 		boardsize = NUMHOUSES*2+2;
@@ -31,7 +36,6 @@ public class AIhard {
 		kalah2 = boardsize - 1;
 		endP = -1;
 	}
-	
 	
 	/** this function replicates the move function in Game.java
 	it is used to calculate the board state after 2 AI and 2 human moves 
@@ -176,15 +180,12 @@ public class AIhard {
 	// Alpha - beta is used to reduced the amount of workload 
 	
 	private int minimax (int[] board, int movePosition, int depth, boolean isComputer, int alpha, int beta) {
-		int bestValue = 0;
 		int currValue;
 		int[] tempBoard = Arrays.copyOf(board,boardsize);
 		
 		if (isComputer) {
-			bestValue = Integer.MIN_VALUE;
 		}
 		else {
-			bestValue = Integer.MAX_VALUE;
 		}
 		
 		if (depth == 0 || generatePossibleMoves(board,isComputer).length == 0) {
@@ -200,8 +201,6 @@ public class AIhard {
 				
 				while (endP == kalah2) {
 					int[] pos = generatePossibleMoves(tempBoard,true);
-					System.out.print("TESTING POSSIBLE MOVES: ");
-					System.out.println(Arrays.toString(pos));
 					
 					for (int j : pos) {
 						int[] ttBoard = Arrays.copyOf(tempBoard,boardsize);
@@ -269,7 +268,7 @@ public class AIhard {
 	// If there is, perform the move 
 	// If there is not, run minimax to find move
 	
-	private int generateBestMove (int[] board) {
+	private int generateBestMove () {
 		int bestMove = -1;
 		int mmVal;
 		int bestValue = Integer.MIN_VALUE;
@@ -308,55 +307,37 @@ public class AIhard {
 		return bestMove;
 	}
 	/***************** DONE ******************/
-	
-	
-	
-	/********** MAIN FUNCTIOn ***************/
-	// The main public function. Other files would only need to call this function to run AI medium 
-	// This function generate the best move for AI at depth level 2 by calling other helper functions
-	// After the move is chosen, the function performs the move and passes the access back to
-	// the main program
-	
-	public void AImove (int [] board) {
-		int endPosition;
-		
-		do {
-			if (!game.isEmpty()) {
-				int house = generateBestMove(board);
-				System.out.println("AI house: " + house);
-			
-				int numSeeds = game.boardInfo(house);
-				endPosition = (house + numSeeds) % boardsize;
-				if (numSeeds + house <= kalah2){
-					game.disperseSeeds(house+1,house+numSeeds);
-				}
-				else {
-					game.disperseSeeds(house+1,kalah2);
-					numSeeds = numSeeds - (kalah2-house);
-					int numLoops = numSeeds/ (boardsize - 1);
-					while (numLoops > 0) {
-						game.disperseSeeds(0,kalah1-1);
-						game.disperseSeeds(kalah1+1,kalah2);
-						numSeeds -= kalah2;
-						--numLoops;
+
+	@Override
+	public void run() {
+		boolean stop = false;
+		while (!stop) {
+			String input;
+			String [] info;
+			try {
+				input = boardQueueIn.take();
+				info = input.split("_");
+				System.out.println("AI Command Recieved: " + input);
+				switch(info[0]) {
+				case "MOVE": //Updated Board Sent With No Turn Change
+					String [] _board = new String [info.length-2];
+					for(int i = 2; i < info.length; ++i) {
+						_board[i-2] = info[i];
 					}
-					if (numSeeds < kalah1){
-						game.disperseSeeds(0,numSeeds-1);
+					board = new int [_board.length];
+					for(int i = 0; i < board.length; ++i) {
+						board[i] = Integer.parseInt(_board[i]);
 					}
-					else {
-						game.disperseSeeds(0,kalah1-1);
-						game.disperseSeeds(kalah1 + 1,numSeeds);
-					}
+					break;
+				case "AITURN":
+					int move = generateBestMove();
+					boardQueueOut.put("MOVE_2_" + move);
+					break;
 				}
-				board[house] = 0;
-				game.claimSeeds(endPosition);
-				for (int i = 0; i < boardsize; ++i) {
-					System.out.println("number of Seeds in house " + i + " is: " + board[i]);
-				}
+			} catch (InterruptedException e) {
+				stop = true;
+				e.printStackTrace();
 			}
-			else {
-				break;
-			}
-		} while (endPosition == kalah2);
+		}		
 	}
 }

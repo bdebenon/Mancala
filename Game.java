@@ -1,7 +1,10 @@
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.SynchronousQueue;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.Random;
-import java.util.Scanner;
 
 		
 public class Game implements Runnable {
@@ -21,20 +24,29 @@ public class Game implements Runnable {
 	private int kalahPosition1 = 0;
 	private int kalahPosition2 = 0;
 	private boolean isRandom;
-	private static AIeasy ai1;
-	private static AImedium ai2;
-	private static AIhard ai3;
 	private boolean Pie = false;
-	private boolean firstTurnCompleted = false;
-	private boolean pieRuleHandled = false;
+	private boolean LOCALGAME;
+	private boolean trueTwoPlayer;
+	private boolean firstPlayerTwoTurn;
+	final private ServerSocket serverSocket;
+	private int PORT;
+	private Socket p2Server;
+	private Thread _secondPlayer = null, _networkInput = null, _networkOutput = null;
 	
 	private final BlockingQueue<String> boardQueueIn;
 	private final BlockingQueue<String> boardQueueOut;
+	private BlockingQueue<String> boardQueueIn2;
+	private BlockingQueue<String> boardQueueOut2;
 	
-	public Game(BlockingQueue<String> _boardQueueIn, BlockingQueue<String> _boardQueueOut) {
+	public Game(BlockingQueue<String> _boardQueueIn, BlockingQueue<String> _boardQueueOut, ServerSocket _serverSocket) {
 		boardQueueIn = _boardQueueIn;
 		boardQueueOut = _boardQueueOut;
+		boardQueueIn2 = new SynchronousQueue<String>();
+		boardQueueOut2 = new SynchronousQueue<String>();
+		serverSocket = _serverSocket;
 		System.out.println("Game Instance Created");
+		trueTwoPlayer = false;
+		turn = "p1";
 		}
 
 	String intArrayToString(int [] intArray) {
@@ -72,34 +84,55 @@ public class Game implements Runnable {
 		boolean stop = false;
 		while (!stop) {
 			try {
-				String [] incoming = (boardQueueIn.take()).split("_");
-				System.out.println("Command Received: " + incoming[0]);
+				if(turn.equals("p2") && firstPlayerTwoTurn == true && trueTwoPlayer == true) {
+					firstPlayerTwoTurn = false;
+					boardQueueOut2.put("ACK_PIE");
+				}
+				String [] incoming;
+				String input;
+				if(turn == "p1") 
+					input = boardQueueIn.take();
+				else
+					input = boardQueueIn2.take();
+				incoming = input.split("_");
+				System.out.println("Command Received: " + input);
 				switch(incoming[0]) {
 				case "ACK":
-					System.out.println("SubCommand Received: " + incoming[1]);
 					switch(incoming[1]) {
 					case "READY":
-						boardQueueOut.put("ACK_BEGIN");
-						System.out.println("Check if sent");
+						boardQueueOut.put("ACK_BEGIN_" + turn);
 						break;
-					case "OK":
+					case "OKie":
 						boardQueueOut.put("ACK_WELCOME");
 						break;
+					case "OK":
+						break;
 					case "GAMEINFO":
-						newGame(Integer.parseInt(incoming[2]), Integer.parseInt(incoming[3]), Integer.parseInt(incoming[4]), Integer.parseInt(incoming[5]));
+						newGame(Integer.parseInt(incoming[2]), Integer.parseInt(incoming[3]), Integer.parseInt(incoming[4]), Integer.parseInt(incoming[5]), Integer.parseInt(incoming[6]));
 						boardQueueOut.put(createUpdatePacket());
 						break;
 					}
 					break;
 				case "MOVE":
-					move(Integer.parseInt(incoming[2]));
-					if (isEmpty()){
-						lastMove();
-						isOver();
-					}
+						move(Integer.parseInt(incoming[2]));
+						if (isEmpty()){
+							lastMove();
+							isOver();
+						}
 					break;
 				case "SELECTION":
 					//TODO
+					//boardQueueOut2.put("QUIT");
+					//_secondPlayer.interrupt();
+					//_networkInput.interrupt();
+					//_networkOutput.interrupt();
+					//serverSocket.close();
+					break;
+				case "PIE":
+					if(incoming[1].equals("ACCEPT"))
+						pieRule();
+					boardQueueOut.put(createUpdatePacket());
+					boardQueueOut2.put(createUpdatePacket());
 					break;
 				case "OPTIONS":
 					break;
@@ -107,27 +140,40 @@ public class Game implements Runnable {
 					System.out.println("Client Terminated Game.");
 					throw new InterruptedException("Client Disconnected");
 				}
-			} catch (InterruptedException ex) {
+			} catch (InterruptedException | NumberFormatException | IOException ex) {
 			stop = true;
+			try {
+				serverSocket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			}
 		}
 	}
 	
 	// initialize the game
-	public void newGame (int playMode, int numHouses, int numSeeds, int isRand) {
+	public void newGame (int playMode, int numHouses, int numSeeds, int isRand, int isLOCAL) throws IOException, InterruptedException {
 		NUMSEEDS = numSeeds;
 		NUMHOUSES = numHouses;
-		boardSize = NUMHOUSES * 2 + 2; 
-		if (isRand == 0) {
+		boardSize = NUMHOUSES * 2 + 2;
+		firstPlayerTwoTurn = true;
+		boardQueueIn.clear();
+		boardQueueOut.clear();
+		boardQueueIn2.clear();
+		boardQueueOut2.clear();
+		if (isRand == 0) 
 			isRandom = false;
-		}
-		else {
+		else
 			isRandom = true;
-		}
+		
+		if(isLOCAL == 0)
+			LOCALGAME = false;
+		else 
+			LOCALGAME = true;
 		board = new int[boardSize];
 		kalahPosition1 = NUMHOUSES;
 		kalahPosition2 = boardSize - 1;
-		System.out.println("Play Mode: " + playMode);
 		if (!isRandom) {
 			for (int i = 0; i < boardSize; ++i) {
 				if (i== kalahPosition1 || i == kalahPosition2){
@@ -151,14 +197,33 @@ public class Game implements Runnable {
 			board[kalahPosition2] = 0;
 		}
 		MODE = playMode;
+		if(MODE == 0) {
+			if(LOCALGAME == true) {
+				//TODO
+			} else {
+				System.out.println("Waiting for Player 2 Connection...");
+				p2Server = serverSocket.accept();
+				System.out.println("Just connected to " + p2Server.getRemoteSocketAddress());
+				_networkInput = new Thread(new Network(boardQueueIn2, p2Server, 0));
+				_networkOutput = new Thread(new Network(boardQueueOut2, p2Server, 1));
+				_networkInput.start();
+				_networkOutput.start();
+				boardQueueOut2.put("INFO_" + MODE + "_" + NUMHOUSES + "_" + NUMSEEDS);
+				boardQueueOut2.put(createUpdatePacket());
+				trueTwoPlayer = true;
+			}
+		}
 		if (MODE == 1) {
-			 ai1 = new AIeasy();
+			 _secondPlayer = new Thread(new AIeasy(this, boardQueueOut2, boardQueueIn2));
+			 _secondPlayer.start();
 		}
 		if (MODE == 2) {
-			ai2 = new AImedium(this);
+			_secondPlayer = new Thread(new AImedium(this, boardQueueOut2, boardQueueIn2));
+			_secondPlayer.start();
 		}
 		if (MODE == 3) {
-			ai3 = new AIhard(this);
+			_secondPlayer = new Thread(new AIhard(this, boardQueueOut2, boardQueueIn2));
+			_secondPlayer.start();
 		}
 		turn = "p1";
 	}
@@ -191,16 +256,7 @@ public class Game implements Runnable {
 		Pie = pie;
 	}
 	
-	public void setEndP (int end) {
-		endP = end;
-	}
-	
 	public void pieRule () {
-		System.out.println("You want to switch position with player 1. True or false");
-		Scanner sc = new Scanner(System.in);
-		boolean isPie = Boolean.parseBoolean(sc.nextLine());
-		setPie(isPie);
-		if (Pie) {
 			int [] tempBoard = Arrays.copyOf(board,boardSize);
 			for (int i = 0; i < NUMHOUSES; ++i) {
 				board[i] = tempBoard[kalahPosition1+1+i];
@@ -212,7 +268,6 @@ public class Game implements Runnable {
 			System.out.println("Board position has been switched");
 			System.out.println("Player 2 has Player 1 board side now");
 			System.out.println("Player 1 continues to play with the new board");
-		}
 	}
 	
 	/*********** END OF HELPER FUNCTIONS FOR PIE RULE **************/
@@ -254,11 +309,11 @@ public class Game implements Runnable {
 	public boolean isOver () throws InterruptedException {
 		String result = checkWinner();
 		boardQueueOut.put(createUpdatePacket());
+		if(trueTwoPlayer == true)
+			boardQueueOut2.put(createUpdatePacket());
 		if (!result.equals("none")) {
 			if (result.equals("tie")){
 				boardQueueOut.put("ACK_TIE");
-				//System.out.println("TIE");
-				//System.out.println("Game Over");
 			}
 			else {
 				if(result.equals("p1")) {
@@ -266,8 +321,6 @@ public class Game implements Runnable {
 				} else {
 				boardQueueOut.put("ACK_LOSER");
 				}
-				//System.out.println("The winner is " + result);
-				//System.out.println("Game Over");
 			}
 			return true;
 		}
@@ -302,11 +355,6 @@ public class Game implements Runnable {
 				board[i] = 0;
 			}
 		}
-		for (int i = 0; i < boardSize; ++i) {
-			System.out.println("number of seeds in house " + i + " is: " + board[i]);
-		}
-		System.out.println("Kalah 1: " + board[kalahPosition1]);
-		System.out.println("Kalah 2: " + board[kalahPosition2]);
 	}
 	
 	public void claimSeeds (int position) {
@@ -331,33 +379,16 @@ public class Game implements Runnable {
 	}
 	
 	public void checkTurn (int position) throws InterruptedException{
-		if (MODE == 0){
 			if (turn == "p1" && position != kalahPosition1){
 				turn = "p2";
-				firstTurnCompleted = true;
 			}
 			else if (turn == "p2" && position != kalahPosition2) {
 				turn = "p1";
 			}
-			System.out.println("TURN: " + turn);
-		}
-		else { // AI mode 
-			if (position != kalahPosition1) {
-				turn = "p2";
-				firstTurnCompleted = true;
-				if (MODE == 1) {
-					ai1.AImove(this,board);
-				}
-				if (MODE == 2) {
-					ai2.AImove(board);
-				}
-				if (MODE == 3) {
-					ai3.AImove(board);
-				}
-				turn = "p1";
-			}
-		}
-		boardQueueOut.put(createUpdatePacket());
+			boardQueueOut.put(createUpdatePacket());
+			boardQueueOut2.put(createUpdatePacket());
+			if(turn == "p2" && !trueTwoPlayer)
+				boardQueueOut2.put("AITURN");
 	}
 	
 	public void move (int position) throws InterruptedException {
@@ -410,9 +441,16 @@ public class Game implements Runnable {
 			}
 			claimSeeds(endPosition);
 			checkTurn(endPosition);
+			boardQueueOut.put(createUpdatePacket());
+			if(trueTwoPlayer == true)
+				boardQueueOut2.put(createUpdatePacket());
 		}
 		else {
 			System.out.println("Invalid position");
+			if(turn.equals("p2") && !trueTwoPlayer) {
+				boardQueueOut2.put(createUpdatePacket());
+				boardQueueOut2.put("AITURN");
+			}
 			boardQueueOut.put("ACK_ILLEGAL");
 		}
 	}

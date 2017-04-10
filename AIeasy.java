@@ -1,4 +1,4 @@
-import java.util.*;
+import java.util.concurrent.BlockingQueue;
 
 /******* AI - easy level ********/
 /*********************************
@@ -8,60 +8,54 @@ Next move for AI is randomly decided
 
 *********************************/
 
-public class AIeasy {
-	private Game game;
-	public void AImove (Game game, int [] board) {
-		this.game = game;
-		int endPosition = 0;
-		int NUMHOUSES = game.getNumHouses();
-		int NUMSEEDS = game.getNumSeeds();
-		int boardsize = NUMHOUSES*2+2;
-		int kalah1 = NUMHOUSES;
-		int kalah2 = boardsize - 1;
+public class AIeasy implements Runnable {
+	private final Game game;
+	private final BlockingQueue<String> boardQueueIn;
+	private final BlockingQueue<String> boardQueueOut;
+	private int [] board;
+	public AIeasy (Game _game, BlockingQueue<String> _boardQueueIn, BlockingQueue<String> _boardQueueOut) {
+		game = _game;
+		boardQueueIn = _boardQueueIn;
+		boardQueueOut = _boardQueueOut;
 		
-		do {
-			if (!game.isEmpty()) {
-				int house;
-				// randomly choose a house. If the house is invalid (empty), chose a different house.
-				do {
-					house = (int) (Math.random() * NUMHOUSES + kalah1 + 1);
-				} while (game.boardInfo(house) == 0); 
-				System.out.println("AI house: " + house);
-			
-				int numSeeds = game.boardInfo(house);
-				endPosition = (house + numSeeds) % boardsize;
-				if (numSeeds + house <= kalah2){
-					game.disperseSeeds(house+1,house+numSeeds);
-				}
-				else {
-					game.disperseSeeds(house+1,kalah2);
-					numSeeds = numSeeds - (kalah2-house);
-					int numLoops = numSeeds/ (boardsize - 1);
-					while (numLoops > 0) {
-						game.disperseSeeds(0,kalah1-1);
-						game.disperseSeeds(kalah1+1,kalah2);
-						numSeeds -= kalah2;
-						--numLoops;
+	}
+	@Override
+	public void run() {
+		boolean stop = false;
+		while (!stop) {
+			String input;
+			String [] info;
+			try {
+				input = boardQueueIn.take();
+				info = input.split("_");
+				System.out.println("AI Command Recieved: " + input);
+				switch(info[0]) {
+				case "MOVE": //Updated Board Sent With No Turn Change
+					String [] _board = new String [info.length-2];
+					for(int i = 2; i < info.length; ++i) {
+						_board[i-2] = info[i];
 					}
-					if (numSeeds < kalah1){
-						game.disperseSeeds(0,numSeeds-1);
+					board = new int [_board.length];
+					for(int i = 0; i < board.length; ++i) {
+						board[i] = Integer.parseInt(_board[i]);
 					}
-					else {
-						game.disperseSeeds(0,kalah1-1);
-						game.disperseSeeds(kalah1 + 1,numSeeds);
+					break;
+				case "AITURN":
+					int NUMHOUSES = game.getNumHouses();
+					boolean validMove = false;
+					int move = 0;
+					while(!validMove) {
+						move = (int) (Math.random() * NUMHOUSES + NUMHOUSES + 1);
+						if(board[move] != 0)
+							validMove = true;
 					}
+					boardQueueOut.put("MOVE_2_" + move);
+					break;
 				}
-				board[house] = 0;
-				game.claimSeeds(endPosition);
-				for (int i = 0; i < boardsize; ++i) {
-					System.out.println("number of Seeds in house " + i + " is: " + board[i]);
-				}
+			} catch (InterruptedException e) {
+				stop = true;
+				e.printStackTrace();
 			}
-			else {
-				break;
-			}
-		// if the end position of AI move ends in its kalah (kalah2)
-		// AI gets to move again
-		} while (endPosition == kalah2);
+		}		
 	}
 }

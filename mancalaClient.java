@@ -88,17 +88,19 @@ public class mancalaClient {
 	  BlockingQueue<String> informationQueueIn = new SynchronousQueue<String>();
 	  BlockingQueue<String> informationQueueOut = new SynchronousQueue<String>();
 	  String serverName = "0.0.0.0";
+	  boolean end = false;
 	  int PORT = 43594;
       try {
           GameUI gameGUI = new GameUI(informationQueueIn, informationQueueOut);
-          new Thread(gameGUI).start();
     	  System.out.println("Connecting to " + serverName + " on port " + PORT);
     	  Socket client = new Socket(serverName, PORT);
 	      System.out.println("Just connected to " + client.getRemoteSocketAddress());
 	      clientNetwork clientNetworkInput = new clientNetwork(informationQueueIn, client, 0);
 	      clientNetwork clientNetworkOutput = new clientNetwork(informationQueueOut, client, 1);
+	      new Thread(gameGUI).start();
 	 	  new Thread(clientNetworkInput).start();
 	 	  new Thread(clientNetworkOutput).start();
+	 	  end = true;
       } catch(IOException e) {
          e.printStackTrace();
       }
