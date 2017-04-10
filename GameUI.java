@@ -116,7 +116,6 @@ public class GameUI extends JPanel implements Runnable {
 					if (ae.getSource() == seedOptions[i])
 					{
 						numSeeds = i + 1;
-						//System.out.println("Number of seeds: "+ numSeeds);
 					}
 				}
 				for(int i = 0; i < houseOptions.length; ++i) {
@@ -127,7 +126,6 @@ public class GameUI extends JPanel implements Runnable {
 							x = 1750;
 						else
 							x = 1400;
-						//System.out.println("Number of houses: " + numHouses);
 					}
 				}
 		        if (ae.getSource() == random)
@@ -172,7 +170,6 @@ public class GameUI extends JPanel implements Runnable {
 	    public void actionPerformed(ActionEvent ae) {
 		try {
 			if (ae.getSource() == playAgain) {
-				//window.remove(winnerScreen);
 				restart();
 			}
 		} catch (IOException | InterruptedException e1) {
@@ -194,6 +191,7 @@ public class GameUI extends JPanel implements Runnable {
 			}
 		}
 	};
+	
 	String boolToString (boolean inputBool) {
 		String booleanStatus;
 			if(inputBool) {
@@ -203,7 +201,8 @@ public class GameUI extends JPanel implements Runnable {
 			}
 		return booleanStatus;
 	}
-
+	
+	/* restarts the game/ resets board after a game has completed */
 	void restart() throws InterruptedException, IOException {
 		window.remove(winnerScreen);
 		createGameBoard();
@@ -213,6 +212,8 @@ public class GameUI extends JPanel implements Runnable {
 		window.invalidate();
 		window.validate();
 	}	
+	
+	/* starts game for the first time */
 	void begin() throws InterruptedException, IOException {
 		window.remove(welcome);
 		createGameBoard();
@@ -223,6 +224,7 @@ public class GameUI extends JPanel implements Runnable {
 		window.validate();
 	}
 	
+	/* starts new game during current game is newGame button is pressed */
 	void newGame() throws InterruptedException {
 		String move = "ACK_GAMEINFO_" + playMode + "_" + numHouses + "_" + numSeeds + "_" + boolToString(isRandom) + "_" + boolToString(LOCALGAME);
 		informationQueueOut.put(move);
@@ -510,14 +512,15 @@ public class GameUI extends JPanel implements Runnable {
 		 c.gridy = 10;
 		 welcome.add(seeds, c);
 		 
-		 mode = new JLabel("Mode: " + getText(playMode), SwingConstants.CENTER);
+ 
+		mode = new JLabel("Mode: " + getText(playMode), SwingConstants.CENTER);
 		 mode.setFont(new Font("Serif", Font.PLAIN, 20));
 		 c.gridwidth = 4;
 		 c.gridx = 3;
 		 c.gridy = 11;
 		 welcome.add(mode, c);
 		 
-		 randomize = new JLabel("Randomize: " + getText(isRandom), SwingConstants.CENTER);
+		randomize = new JLabel("Randomize: " + getText(isRandom), SwingConstants.CENTER);
 		 randomize.setFont(new Font("Serif", Font.PLAIN, 20));
 		 c.gridwidth = 4;
 		 c.gridx = 3;
@@ -548,6 +551,7 @@ public class GameUI extends JPanel implements Runnable {
 			winner.setText("It's a tie!");
 		}
 		
+		// Play Again Button
 		winner.setFont(new Font("Serif", Font.PLAIN, 50));
 		playAgain = new JButton("Play Again");
 		playAgain.addActionListener(winnerListener);
@@ -582,9 +586,10 @@ public class GameUI extends JPanel implements Runnable {
 		aboutPanel.add(abt, c);
 
 		c.gridy++;
+		
+		// Kalah info read in from text file
 		BufferedReader in = new BufferedReader(new FileReader("about.txt"));
 		String line;
-		
 		while ((line = in.readLine()) != null) {
 			aboutPanel.add(new JLabel("<html>" + line + "</html>"), c);
 			c.gridy++;
@@ -640,6 +645,7 @@ public class GameUI extends JPanel implements Runnable {
 			return "No";
 	}
 	
+	// Runs a timer that is restarted every time a player makes a move. If the timer reaches 10 seconds, player loses
 	private void runTimer() throws IOException{
 		timer.cancel();
 		timer = new Timer();
@@ -648,7 +654,6 @@ public class GameUI extends JPanel implements Runnable {
 
 			@Override
 			public void run(){
-				//TODO: IF THIS WAS REACHED, GO TO GAME OVER
 				try {
 					createWinScreen(1);
 					window.setContentPane(winnerScreen);
@@ -665,7 +670,7 @@ public class GameUI extends JPanel implements Runnable {
 		
 	}
 	
-	//Called each time a Welcome Screen Object is clicked
+	// Called each time a Welcome Screen Object is clicked 
 	void updateWelcome() {
 		houses.setText("Houses: " + numHouses);
 		seeds.setText("Seeds: " + numSeeds);
@@ -673,7 +678,7 @@ public class GameUI extends JPanel implements Runnable {
 		randomize.setText("Randomize: " + getText(isRandom));
 	}
 	
-	//Called each time a Game Object is clicked
+	// Called each time a Game Object is clicked 
 	void updateBoard(String [] board, String _playerTurn) {
 		if(_playerTurn.equalsIgnoreCase("p1")) {
 			playerTurn.setText("Player 1's Turn");
